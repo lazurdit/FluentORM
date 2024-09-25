@@ -1,0 +1,1 @@
+docker compose -f oracle-xe.yaml up -d

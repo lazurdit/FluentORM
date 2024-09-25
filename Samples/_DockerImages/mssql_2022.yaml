@@ -1,0 +1,24 @@
+version: "3.8"
+name: Lazurd_IT
+services:
+  sql-server:
+    container_name: ms_sql_server_2022
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: P@ssw0rd
+      ACCEPT_EULA: Y
+    ports:
+      - 1433:1433
+    networks:
+      - lazurd_net
+    user: root
+    volumes:
+      - lazurd_it_mssql_opt_data:/var/opt/mssql/data
+      - lazurd_it_mssql_opt_log:/var/opt/mssql/log
+      - lazurd_it_mssql_opt_secrets:/var/opt/mssql/secrets
+volumes:
+  lazurd_it_mssql_opt_data:
+  lazurd_it_mssql_opt_log:
+  lazurd_it_mssql_opt_secrets:
+networks:
+  lazurd_net:

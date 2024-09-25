@@ -1,0 +1,1 @@
+docker compose -f pgsql_15.yaml up -d

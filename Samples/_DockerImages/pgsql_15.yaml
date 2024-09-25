@@ -1,0 +1,19 @@
+version: "3.8"
+name: Lazurd_IT
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres_15
+    networks:
+      - lazurd_net
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=P@ssw0rd
+    ports:
+      - "5432:5432"
+    volumes:
+      - lazurd_it_postgres_db:/var/lib/postgresql/data
+volumes:
+  lazurd_it_postgres_db:
+networks:
+  lazurd_net:

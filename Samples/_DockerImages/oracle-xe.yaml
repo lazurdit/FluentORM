@@ -1,0 +1,38 @@
+# https://dev.to/docker/how-to-run-oracle-database-in-a-docker-container-using-docker-compose-1c9b
+# user: system, PWD: oracle, schema name: XE
+name: Lazurd_IT
+services:
+    oracle:
+        image: container-registry.oracle.com/database/express:18.4.0-xe
+        networks:
+            - lazurd_net
+        container_name: oracledb
+        volumes:
+            - lazurd_it_oracle_data:/opt/oracle/oradata
+            - lazurd_it_oracle_backup:/opt/oracle/backup
+        ports:
+            - "1521:1521"
+            - "35518:5500"
+        environment:
+            - ORACLE_ALLOW_REMOTE=true
+            # - ORACLE_SID=ORCLCDB
+            # - ORACLE_PDB=ORCLPDB1
+            - ORACLE_PASSWORD=oracle
+        # healthcheck:
+        #     test:
+        #         [
+        #             "CMD",
+        #             "sqlplus",
+        #             "-L",
+        #             "sys/oracle@//localhost:1521/ORCLCDB as sysdba",
+        #             "@healthcheck.sql",
+        #         ]
+        #     interval: 30s
+        #     timeout: 10s
+        #     retries: 5
+
+volumes:
+    lazurd_it_oracle_data:
+    lazurd_it_oracle_backup:
+networks:
+    lazurd_net:

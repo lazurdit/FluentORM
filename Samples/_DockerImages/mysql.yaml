@@ -1,0 +1,19 @@
+name: Lazurd_IT
+services:
+  mysql:
+    image: mysql:latest
+    container_name: my_sql
+    networks:
+      - lazurd_net
+    environment:
+      MYSQL_ROOT_PASSWORD: "P@ssw0rd"
+      MYSQL_USER: "mySqlUser"
+      MYSQL_PASS: "P@ssw0rd"
+    ports:
+      - "3306:3306"
+    volumes:
+      - lazurd_it_mysql_db:/var/lib/mysql
+volumes:
+  lazurd_it_mysql_db:
+networks:
+  lazurd_net:

@@ -1,0 +1,1 @@
+docker compose -f mssql_2022.yaml up -d

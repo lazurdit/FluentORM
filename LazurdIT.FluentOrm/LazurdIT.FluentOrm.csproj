@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Version>0.9.2</Version>
+		<Authors>Lazurd IT Development Team</Authors>
+		<Company>Lazurd IT</Company> 
+		<IsPublishable>False</IsPublishable>
+		<Title>Fluent ORM</Title>
+		<PackageId>LazurdIT.FluentOrm</PackageId>
+		<Product>LazurdIT.FluentOrm</Product>
+		<Copyright>2024</Copyright>
+		<PackageLicenseFile>license.txt</PackageLicenseFile>
+		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<Compile Remove="Lazurd\**" />
+		<EmbeddedResource Remove="Lazurd\**" />
+		<None Remove="Lazurd\**" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="FluentOrm.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="MySqlConnector" Version="2.3.2" />
+		<PackageReference Include="Npgsql" Version="6.0.12" />
+		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.1" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="assets\lazurd.png">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="assets\license.txt">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Update="assets\README.md">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="license.txt">
+		  <PackagePath>\</PackagePath>
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		  <Pack>True</Pack>
+		</None>
+	</ItemGroup>
+
+</Project>
