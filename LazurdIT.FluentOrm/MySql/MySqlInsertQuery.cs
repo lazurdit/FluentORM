@@ -6,7 +6,8 @@ using MySqlConnector;
 
 namespace LazurdIT.FluentOrm.MySql;
 
-public class MySqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
+public class MySqlInsertQuery<T> : IInsertQuery<T>
+    where T : IFluentModel, new()
 {
     public MySqlInsertQuery<T> WithFields(Action<MySqlFieldsSelectionManager<T>> fn)
     {
@@ -17,38 +18,76 @@ public class MySqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
     public MySqlFieldsSelectionManager<T> FieldsManager { get; } = new();
 
     public string TableName { get; set; } = MySqlDtoMapper<T>.GetTableName();
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
+
+    public string TablePrefix { get; set; } = string.Empty;
+
+    ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    public MySqlInsertQuery<T> WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (MySqlConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (MySqlConnection?)connection;
+        return this;
+    }
+
+    public MySqlInsertQuery<T> WithConnection(MySqlConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
+    }
+
     public string ExpressionSymbol => "@";
 
-    public MySqlConnection? SqlConnection { get; set; }
-    public DbConnection? Connection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public MySqlConnection? Connection { get; set; }
 
     IFieldsSelectionManager<T> IInsertQuery<T>.FieldsManager => FieldsManager;
 
     public MySqlInsertQuery(MySqlConnection? connection = null)
     {
-        SqlConnection = connection;
+        Connection = connection;
     }
 
-    public T? Execute(T record, bool returnNewRecord = false, MySqlConnection? sqlConnection = null)
+    public T? Execute(T record, bool returnNewRecord = false, MySqlConnection? connection = null)
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
         string parameterName = "P1_";
         List<string> fieldNames = FieldsManager.FieldsList.GetFinalPropertyNames();
         string fieldsListString = string.Join(",", fieldNames);
-        string fieldsParametersListString = string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames().Select(n => $"@{parameterName}{n}"));
+        string fieldsParametersListString = string.Join(
+            ",",
+            FieldsManager.FieldsList.GetFinalPropertyNames().Select(n => $"@{parameterName}{n}")
+        );
 
-        var insertQuery = $@"insert into {TableName} ({fieldsListString})
+        var insertQuery =
+            $@"insert into {TableNameWithPrefix} ({fieldsListString})
                 values ({fieldsParametersListString});";
 
-        MySqlCommand cmd = new(insertQuery, connection);
+        MySqlCommand cmd = new(insertQuery, dbConnection);
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 
@@ -56,22 +95,23 @@ public class MySqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         T newRecord = default!;
         if (returnNewRecord)
         {
-            StringBuilder query = new($"SELECT  * FROM {TableName}");
+            StringBuilder query = new($"SELECT  * FROM {TableNameWithPrefix}");
             var parameters = new List<MySqlParameter>();
 
-            using var command = new MySqlCommand()
-            {
-                Connection = connection
-            };
+            using var command = new MySqlCommand() { Connection = dbConnection };
             bool getResult = false;
             if (FieldsManager.IdentityFieldsList.Count > 0)
             {
-                query.Append($" where {FieldsManager.IdentityFieldsList.FirstOrDefault().Value.FinalPropertyName} = {cmd.LastInsertedId}");
+                query.Append(
+                    $" where {FieldsManager.IdentityFieldsList.FirstOrDefault().Value.FinalPropertyName} = {cmd.LastInsertedId}"
+                );
                 getResult = true;
             }
             else if (FieldsManager.PKFieldsList.Count > 0)
             {
-                query.Append($" where {FieldsManager.PKFieldsList.FirstOrDefault().Value.FinalPropertyName} = {cmd.LastInsertedId}");
+                query.Append(
+                    $" where {FieldsManager.PKFieldsList.FirstOrDefault().Value.FinalPropertyName} = {cmd.LastInsertedId}"
+                );
                 getResult = true;
             }
             else
@@ -80,10 +120,17 @@ public class MySqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
                 {
                     string parameterName2 = "P1_";
 
-                    string params2 = string.Join(" and ", FieldsManager.FieldsList.Select(w => $"{w.Value.FinalPropertyName} = @{parameterName2}{w.Value.FinalPropertyName}"));
+                    string params2 = string.Join(
+                        " and ",
+                        FieldsManager.FieldsList.Select(w =>
+                            $"{w.Value.FinalPropertyName} = @{parameterName2}{w.Value.FinalPropertyName}"
+                        )
+                    );
                     query.Append($" WHERE {params2}");
 
-                    cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
+                    cmd.Parameters.AddRange(
+                        FieldsManager.GetSqlParameters(record, parameterName).ToArray()
+                    );
                     getResult = true;
                 }
             }
@@ -103,7 +150,9 @@ public class MySqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         return newRecord;
     }
 
-    IInsertQuery<T> IInsertQuery<T>.WithFields(Action<IFieldsSelectionManager<T>> fn) => WithFields(fn);
+    IInsertQuery<T> IInsertQuery<T>.WithFields(Action<IFieldsSelectionManager<T>> fn) =>
+        WithFields(fn);
 
-    T? IInsertQuery<T>.Execute(T record, bool returnNewRecord, DbConnection? sqlConnection) => this.Execute(record, returnNewRecord, sqlConnection as MySqlConnection);
+    T? IInsertQuery<T>.Execute(T record, bool returnNewRecord, DbConnection? connection) =>
+        this.Execute(record, returnNewRecord, connection as MySqlConnection);
 }

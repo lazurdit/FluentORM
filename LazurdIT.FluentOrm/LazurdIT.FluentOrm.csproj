@@ -24,7 +24,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="FluentOrm.csproj" />
+	  <None Remove="LazurdIT.FluentOrm.nuspec" />
 	</ItemGroup>
 
 	<ItemGroup>

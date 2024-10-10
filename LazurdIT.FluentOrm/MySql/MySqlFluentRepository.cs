@@ -2,11 +2,13 @@
 using System.Data.Common;
 using System.Text;
 using LazurdIT.FluentOrm.Common;
+using LazurdIT.FluentOrm.MsSql;
 using MySqlConnector;
 
 namespace LazurdIT.FluentOrm.MySql;
 
-public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : IFluentModel, new()
+public abstract class MySqlFluentRepository<T> : IFluentRepository<T>
+    where T : IFluentModel, new()
 {
     public List<IFluentRelation> InRelations { get; set; } = new();
     public List<IFluentRelation> OutRelations { get; set; } = new();
@@ -14,6 +16,12 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
     public MySqlUpdateQuery<T>? UpdateQuery { get; private set; }
     public MySqlDeleteQuery<T>? DeleteQuery { get; private set; }
     public MySqlSelectQuery<T>? SelectQuery { get; private set; }
+
+    public string TableName { get; set; } = MySqlDtoMapper<T>.GetTableName();
+
+    public string? TablePrefix { get; set; }
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
     public string ExpressionSymbol => "@";
 
@@ -25,54 +33,73 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
 
     private static string GetRelationQuery(IFluentRelation relation)
     {
-        StringBuilder queryString = new($@"select top 1 1 FROM {relation.TargetTableName}");
+        StringBuilder queryString = new($@"select top 1 1 FROM {relation.TargetTablePrefix}{relation.TargetTableName}");
 
         StringBuilder relationStringBuilder = new();
 
         for (int i = 0; i < relation.Fields.Count; i++)
         {
             var field = relation.Fields.ElementAt(i);
-            relationStringBuilder.Append($@"{(i > 0 ? " and " : "")} {field.TargetFieldName.FinalPropertyName} = @{field.SourceFieldName.FinalPropertyName}");
+            relationStringBuilder.Append(
+                $@"{(i > 0 ? " and " : "")} {field.TargetFieldName.FinalPropertyName} = @{field.SourceFieldName.FinalPropertyName}"
+            );
         }
         if (relationStringBuilder.Length > 0)
             queryString.Append($" where {relationStringBuilder}");
         return queryString.ToString();
     }
 
-    public bool IsUsedByAnyOutRelation(Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager, MySqlConnection? sqlConnection = null)
+    public bool IsUsedByAnyOutRelation(
+        Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager,
+        MySqlConnection? connection = null
+    )
     {
-        return IsUsedByRelation(Array.Empty<IFluentRelation>(), conditionsManager, sqlConnection);
+        return IsUsedByRelation(Array.Empty<IFluentRelation>(), conditionsManager, connection);
     }
 
-    public bool IsUsedByRelation(string FluentRelationName, Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager, MySqlConnection? sqlConnection = null)
-        => IsUsedByRelation(new[] { FluentRelationName }, conditionsManager, sqlConnection);
+    public bool IsUsedByRelation(
+        string FluentRelationName,
+        Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager,
+        MySqlConnection? connection = null
+    ) => IsUsedByRelation(new[] { FluentRelationName }, conditionsManager, connection);
 
-    public bool IsUsedByRelation(string[] FluentRelationNames, Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager, MySqlConnection? sqlConnection = null)
+    public bool IsUsedByRelation(
+        string[] FluentRelationNames,
+        Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager,
+        MySqlConnection? connection = null
+    )
     {
         List<IFluentRelation> FluentRelations = new();
 
         foreach (var FluentRelationName in FluentRelationNames)
-            FluentRelations.Add(OutRelations.FirstOrDefault(t => t.RelationName == FluentRelationName) ?? throw new Exception("Relation not found in out relations"));
+            FluentRelations.Add(
+                OutRelations.FirstOrDefault(t => t.RelationName == FluentRelationName)
+                    ?? throw new Exception("Relation not found in out relations")
+            );
 
         if (FluentRelations.Count == 0)
             throw new Exception("NoRelationsPassed");
 
-        return IsUsedByRelation(FluentRelations.ToArray(), conditionsManager, sqlConnection);
+        return IsUsedByRelation(FluentRelations.ToArray(), conditionsManager, connection);
     }
 
-    public bool IsUsedByRelation(IFluentRelation[] FluentRelations, Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager, MySqlConnection? sqlConnection = null)
+    public bool IsUsedByRelation(
+        IFluentRelation[] FluentRelations,
+        Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>> conditionsManager,
+        MySqlConnection? connection = null
+    )
     {
         if (OutRelations.Count == 0)
             return false;
 
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
 
         var manager = conditionsManager(new MySqlConditionsManager<T>());
@@ -104,7 +131,9 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
             {
                 foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                 {
-                    parameters.AddRange((MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!);
+                    parameters.AddRange(
+                        (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                    );
                 }
             }
             if (parameters.Count == 0)
@@ -113,7 +142,7 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
             }
 
             string query = queryBuilder.ToString();
-            using var command = new MySqlCommand(query, connection);
+            using var command = new MySqlCommand(query, dbConnection);
             if (parameters.Count > 0)
                 command.Parameters.AddRange(parameters.ToArray());
             var count = command.ExecuteScalar();
@@ -122,82 +151,104 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
         finally
         {
             if (shouldCloseConnection)
-                connection.Close();
+                dbConnection.Close();
         }
     }
 
     public MySqlFluentRepository<T> BuildDefaultQueries()
     {
-        DeleteQuery = new MySqlDeleteQuery<T>(SqlConnection);
-        InsertQuery = new MySqlInsertQuery<T>(SqlConnection);
-        SelectQuery = new MySqlSelectQuery<T>(SqlConnection);
-        UpdateQuery = new MySqlUpdateQuery<T>(SqlConnection);
+        DeleteQuery = new MySqlDeleteQuery<T>(Connection);
+        InsertQuery = new MySqlInsertQuery<T>(Connection);
+        SelectQuery = new MySqlSelectQuery<T>(Connection);
+        UpdateQuery = new MySqlUpdateQuery<T>(Connection);
         return this;
     }
 
-    public string TableName { get; set; } = MySqlDtoMapper<T>.GetTableName();
+    public MySqlSelectQuery<T> Select(MySqlConnection? connection = null) =>
+        new(connection ?? Connection) { };
 
-    /// <summary>
-    /// Resets the identity with a new seed value.
-    /// </summary>
-    /// <param name="newSeed">New seed.</param>
-    public MySqlFluentRepository<T> ResetIdentity(MySqlConnection? sqlConnection = null, int newSeed = 0)
-    {
-        string cmdText = $"DBCC CHECKIDENT ('[{TableName}]', RESEED, {newSeed})";
+    public MySqlRawSelectQuery<T> RawSelect(string sqlString, MySqlConnection? connection = null) =>
+        new(connection ?? Connection) { SelectClause = sqlString };
 
-        MySqlConnection connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+    public MySqlInsertQuery<T> Insert(MySqlConnection? connection = null) =>
+        new(connection ?? Connection) { };
 
-        new MySqlCommand(cmdText, connection) { CommandType = CommandType.Text }.ExecuteNonQuery();
+    public MySqlUpdateQuery<T> Update(MySqlConnection? connection = null) =>
+        new(connection ?? Connection) { };
 
-        return this;
-    }
+    public MySqlDeleteQuery<T> Delete(MySqlConnection? connection = null) =>
+        new(connection ?? Connection) { };
 
-    public MySqlSelectQuery<T> Select(MySqlConnection? sqlConnection = null) => new(sqlConnection ?? SqlConnection) { };
+    public MySqlAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(
+        MySqlConnection? connection = null
+    )
+        where ResultType : IFluentModel, new() => new(connection ?? Connection) { };
 
-    public MySqlRawSelectQuery<T> RawSelect(string sqlString, MySqlConnection? sqlConnection = null) => new(sqlConnection ?? SqlConnection)
-    {
-        SelectClause = sqlString
-    };
-
-    public MySqlInsertQuery<T> Insert(MySqlConnection? sqlConnection = null) => new(sqlConnection ?? SqlConnection) { };
-
-    public MySqlUpdateQuery<T> Update(MySqlConnection? sqlConnection = null) => new(sqlConnection ?? SqlConnection) { };
-
-    public MySqlDeleteQuery<T> Delete(MySqlConnection? sqlConnection = null) => new(sqlConnection ?? SqlConnection) { };
-
-    public MySqlAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(MySqlConnection? sqlConnection = null) where ResultType : IFluentModel, new()
-        => new(sqlConnection ?? SqlConnection) { };
-
-    IAggregateSelectQuery<T, ResultType> IFluentRepository<T>.Aggregate<ResultType>(DbConnection? sqlConnection) => Aggregate<ResultType>((MySqlConnection?)sqlConnection);
+    IAggregateSelectQuery<T, ResultType> IFluentRepository<T>.Aggregate<ResultType>(
+        DbConnection? connection
+    ) => Aggregate<ResultType>((MySqlConnection?)connection);
 
     IFluentRepository<T> IFluentRepository<T>.Build() => Build();
 
     IFluentRepository<T> IFluentRepository<T>.BuildDefaultQueries() => BuildDefaultQueries();
 
-    IDeleteQuery<T> IFluentRepository<T>.Delete(DbConnection? sqlConnection) => Delete((MySqlConnection?)sqlConnection);
+    IDeleteQuery<T> IFluentRepository<T>.Delete(DbConnection? connection) =>
+        Delete((MySqlConnection?)connection);
 
-    IInsertQuery<T> IFluentRepository<T>.Insert(DbConnection? sqlConnection) => Insert((MySqlConnection?)sqlConnection);
+    IInsertQuery<T> IFluentRepository<T>.Insert(DbConnection? connection) =>
+        Insert((MySqlConnection?)connection);
 
-    IRawSelectQuery<T> IFluentRepository<T>.RawSelect(string sqlString, DbConnection? sqlConnection) => RawSelect(sqlString, (MySqlConnection?)sqlConnection);
+    IRawSelectQuery<T> IFluentRepository<T>.RawSelect(string sqlString, DbConnection? connection) =>
+        RawSelect(sqlString, (MySqlConnection?)connection);
 
-    IFluentRepository<T> IFluentRepository<T>.ResetIdentity(DbConnection? sqlConnection, int newSeed) => ResetIdentity((MySqlConnection?)sqlConnection, newSeed);
+    ISelectQuery<T> IFluentRepository<T>.Select(DbConnection? connection) =>
+        Select((MySqlConnection?)connection);
 
-    ISelectQuery<T> IFluentRepository<T>.Select(DbConnection? sqlConnection) => Select((MySqlConnection?)sqlConnection);
+    IUpdateQuery<T> IFluentRepository<T>.Update(DbConnection? connection) =>
+        Update((MySqlConnection?)connection);
 
-    IUpdateQuery<T> IFluentRepository<T>.Update(DbConnection? sqlConnection) => Update((MySqlConnection?)sqlConnection);
-
-    bool IFluentRepository<T>.IsUsedByAnyOutRelation(Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection)
+    bool IFluentRepository<T>.IsUsedByAnyOutRelation(
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection
+    )
     {
         throw new NotImplementedException();
     }
 
-    bool IFluentRepository<T>.IsUsedByRelation(IFluentRelation[] FluentRelations, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection) => IsUsedByRelation(FluentRelations, (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager, (MySqlConnection?)sqlConnection);
+    bool IFluentRepository<T>.IsUsedByRelation(
+        IFluentRelation[] FluentRelations,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection
+    ) =>
+        IsUsedByRelation(
+            FluentRelations,
+            (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager,
+            (MySqlConnection?)connection
+        );
 
-    bool IFluentRepository<T>.IsUsedByRelation(string FluentRelationName, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection) => IsUsedByRelation(FluentRelationName, (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager, (MySqlConnection?)sqlConnection);
+    bool IFluentRepository<T>.IsUsedByRelation(
+        string FluentRelationName,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection
+    ) =>
+        IsUsedByRelation(
+            FluentRelationName,
+            (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager,
+            (MySqlConnection?)connection
+        );
 
-    bool IFluentRepository<T>.IsUsedByRelation(string[] FluentRelationNames, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection) => IsUsedByRelation(FluentRelationNames, (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager, (MySqlConnection?)sqlConnection);
+    bool IFluentRepository<T>.IsUsedByRelation(
+        string[] FluentRelationNames,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection
+    ) =>
+        IsUsedByRelation(
+            FluentRelationNames,
+            (Func<MySqlConditionsManager<T>, MySqlConditionsManager<T>>)conditionsManager,
+            (MySqlConnection?)connection
+        );
 
-    public MySqlConnection? SqlConnection { get; set; }
+    public MySqlConnection? Connection { get; set; }
 
     IDeleteQuery<T>? IFluentRepository<T>.DeleteQuery => DeleteQuery;
 
@@ -207,10 +258,10 @@ public abstract class MySqlFluentRepository<T> : IFluentRepository<T> where T : 
 
     IUpdateQuery<T>? IFluentRepository<T>.UpdateQuery => UpdateQuery;
 
-    DbConnection? IFluentRepository<T>.Connection => SqlConnection;
+    DbConnection? IFluentRepository<T>.Connection => Connection;
 
-    public MySqlFluentRepository(MySqlConnection? sqlConnection = null)
+    public MySqlFluentRepository(MySqlConnection? connection = null)
     {
-        SqlConnection = sqlConnection;
+        Connection = connection;
     }
 }

@@ -2,14 +2,18 @@
 
 namespace LazurdIT.FluentOrm.Common;
 
-public interface IRawSelectQuery<T> : IConditionQuery<T> where T : IFluentModel, new()
+public interface IRawSelectQuery<T> : IConditionQuery<T>
+    where T : IFluentModel, new()
 {
     IFieldsSelectionManager<T> FieldsManager { get; }
     OrderByManager<T> OrderByManager { get; }
     string SelectClause { get; set; }
-    DbConnection? Connection { get; }
 
-    IEnumerable<T> Execute(DbConnection? sqlConnection = null, int pageNumber = 0, int recordsCount = 0);
+    IEnumerable<T> Execute(
+        DbConnection? connection = null,
+        int pageNumber = 0,
+        int recordsCount = 0
+    );
 
     IRawSelectQuery<T> OrderBy(Action<OrderByManager<T>> fn);
 

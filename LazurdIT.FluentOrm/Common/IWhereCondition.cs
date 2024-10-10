@@ -2,7 +2,5 @@
 
 public interface IWhereCondition
 {
-    bool IsValid();
-
     string GetExpression();
 }
