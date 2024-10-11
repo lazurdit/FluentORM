@@ -3,65 +3,111 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Reflection;
 using LazurdIT.FluentOrm.Common;
+using LazurdIT.FluentOrm.Oracle;
+using Oracle.ManagedDataAccess.Client;
 
 namespace LazurdIT.FluentOrm.MsSql;
 
-public class MsSqlDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new()
+public class MsSqlDeleteQuery<T> : IDeleteQuery<T>
+    where T : IFluentModel, new()
 {
     public MsSqlConditionsManager<T> ConditionsManager { get; } = new();
-    public string TableName { get; set; } = GetTableName();
 
-    private static string GetTableName()
+    public string TableName { get; set; } = MsSqlDtoMapper<T>.GetTableName();
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
+
+    public string TablePrefix { get; set; } = string.Empty;
+
+    ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
     {
-        var attribute = typeof(T).GetCustomAttribute<FluentTableAttribute>();
-        string name = attribute?.Name ?? typeof(T).Name;
-        return name;
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    public MsSqlDeleteQuery<T> WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (SqlConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (SqlConnection?)connection;
+        return this;
+    }
+
+    public MsSqlDeleteQuery<T> WithConnection(SqlConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
     }
 
     public string ExpressionSymbol => "@";
 
-    public SqlConnection? SqlConnection { get; set; }
+    public SqlConnection? Connection { get; set; }
 
-    IDbConnection? IDeleteQuery<T>.Connection { get => SqlConnection; }
+    IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
-    IConditionsManager<T> IConditionQuery<T>.ConditionsManager => throw new NotImplementedException();
-
-    public MsSqlDeleteQuery(SqlConnection? sqlConnection = null)
+    string ITableRelatedFluentQuery.TableName
     {
-        SqlConnection = sqlConnection;
+        get => this.TableName;
+        set => this.TableName = value;
     }
 
-    public int Execute(SqlConnection? sqlConnection = null, bool deleteAll = false)
+    public MsSqlDeleteQuery(SqlConnection? connection = null)
+    {
+        Connection = connection;
+    }
+
+    public int Execute(SqlConnection? connection = null, bool deleteAll = false)
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
         if (!deleteAll && ConditionsManager.WhereConditions.Count == 0)
             throw new Exception("DeleteAllMustBeTrueIfNoWhereConditionPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
 
         try
         {
-            var query = $"delete from {TableName}";
+            var query = $"delete from {TableNameWithPrefix}";
             var parameters = new List<SqlParameter>();
 
             if (ConditionsManager.WhereConditions.Count > 0)
             {
                 int i = 0;
-                query += " WHERE " + string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)));
+                query +=
+                    " WHERE "
+                    + string.Join(
+                        " AND ",
+                        ConditionsManager.WhereConditions.Select(w =>
+                            w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                        )
+                    );
 
-                foreach (var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters))
+                foreach (
+                    var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters)
+                )
                 {
-                    parameters.AddRange((SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!);
+                    parameters.AddRange(
+                        (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                    );
                 }
             }
 
-            using var command = new SqlCommand(query, connection);
+            using var command = new SqlCommand(query, dbConnection);
             if (parameters.Count > 0)
                 command.Parameters.AddRange(parameters.ToArray());
 
@@ -71,7 +117,7 @@ public class MsSqlDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new()
         finally
         {
             if (shouldCloseConnection)
-                connection.Close();
+                dbConnection.Close();
         }
     }
 
@@ -81,7 +127,8 @@ public class MsSqlDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new()
         return this;
     }
 
-    int IDeleteQuery<T>.Execute(DbConnection? sqlConnection, bool deleteAll) => Execute((SqlConnection?)sqlConnection, deleteAll);
+    int IDeleteQuery<T>.Execute(DbConnection? connection, bool deleteAll) =>
+        Execute((SqlConnection?)connection, deleteAll);
 
     IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
 }

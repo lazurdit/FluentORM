@@ -8,8 +8,16 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 
 ## Release Notes 
+# 1.0.0
+- fix: Added .WithConnection() method to allow the user to specify the connection string.
+- fix: Added .WithTablePrefix() method to allow the user to specify the table prefix.
+- enhancement: Enhanced insert command code.
+
+# 0.9.2
+- Minor fixes/enhancements
+
 # 0.9.0 (Alpha)
-- fix: initial release
+- initial release
 
 ## Support
 

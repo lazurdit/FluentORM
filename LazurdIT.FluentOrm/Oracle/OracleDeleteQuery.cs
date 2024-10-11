@@ -6,62 +6,104 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace LazurdIT.FluentOrm.Oracle;
 
-public class OracleDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new()
+public class OracleDeleteQuery<T> : IDeleteQuery<T>
+    where T : IFluentModel, new()
 {
     public OracleConditionsManager<T> ConditionsManager { get; } = new();
-    public string TableName { get; set; } = GetTableName();
 
-    private static string GetTableName()
+    public string TableName { get; set; } = OracleDtoMapper<T>.GetTableName();
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
+
+    public string TablePrefix { get; set; } = string.Empty;
+
+    ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
     {
-        var attribute = typeof(T).GetCustomAttribute<FluentTableAttribute>();
-        string name = attribute?.Name ?? typeof(T).Name;
-        return name;
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    public OracleDeleteQuery<T> WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (OracleConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (OracleConnection?)connection;
+        return this;
+    }
+
+    public OracleDeleteQuery<T> WithConnection(OracleConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
     }
 
     public string ExpressionSymbol => ":";
 
-    public OracleConnection? SqlConnection { get; set; }
+    public OracleConnection? Connection { get; set; }
 
-    IDbConnection? IDeleteQuery<T>.Connection { get => SqlConnection; }
+    IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
-    IConditionsManager<T> IConditionQuery<T>.ConditionsManager => throw new NotImplementedException();
-
-    public OracleDeleteQuery(OracleConnection? sqlConnection = null)
+    /// <summary>
+    /// Initializes a new instance of the <see cref="OracleDeleteQuery{T}"/> class.
+    /// </summary>
+    /// <param name="connection">The connection.</param>
+    public OracleDeleteQuery(OracleConnection? connection = null)
     {
-        SqlConnection = sqlConnection;
+        Connection = connection;
     }
 
-    public int Execute(OracleConnection? sqlConnection = null, bool deleteAll = false)
+    public int Execute(OracleConnection? connection = null, bool deleteAll = false)
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
         if (!deleteAll && ConditionsManager.WhereConditions.Count == 0)
             throw new Exception("DeleteAllMustBeTrueIfNoWhereConditionPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
 
         try
         {
-            var query = $"delete from {TableName.ToLower()}";
+            var query = $"delete from {TableNameWithPrefix.ToLower()}";
             var parameters = new List<OracleParameter>();
 
             if (ConditionsManager.WhereConditions.Count > 0)
             {
                 int i = 0;
-                query += " WHERE " + string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)));
+                query +=
+                    " WHERE "
+                    + string.Join(
+                        " AND ",
+                        ConditionsManager.WhereConditions.Select(w =>
+                            w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                        )
+                    );
 
-                foreach (var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters))
+                foreach (
+                    var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters)
+                )
                 {
-                    parameters.AddRange((OracleParameter[]?)condition.GetDbParameters(ExpressionSymbol)!);
+                    parameters.AddRange(
+                        (OracleParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                    );
                 }
             }
 
-            using var command = new OracleCommand(query, connection) { BindByName = true };
+            using var command = new OracleCommand(query, dbConnection) { BindByName = true };
             if (parameters.Count > 0)
                 command.Parameters.AddRange(parameters.ToArray());
 
@@ -71,7 +113,7 @@ public class OracleDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new(
         finally
         {
             if (shouldCloseConnection)
-                connection.Close();
+                dbConnection.Close();
         }
     }
 
@@ -81,7 +123,8 @@ public class OracleDeleteQuery<T> : IDeleteQuery<T> where T : IFluentModel, new(
         return this;
     }
 
-    int IDeleteQuery<T>.Execute(DbConnection? sqlConnection, bool deleteAll) => Execute((OracleConnection?)sqlConnection, deleteAll);
+    int IDeleteQuery<T>.Execute(DbConnection? connection, bool deleteAll) =>
+        Execute((OracleConnection?)connection, deleteAll);
 
     IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
 }

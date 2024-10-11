@@ -2,14 +2,14 @@
 
 namespace LazurdIT.FluentOrm.Common;
 
-public interface IAggregateSelectQuery<T, ResultType> : IConditionQuery<T> where T : IFluentModel, new() where ResultType : IFluentModel, new()
+public interface IAggregateSelectQuery<T, ResultType> : IConditionQuery<T>, ITableRelatedFluentQuery
+    where T : IFluentModel, new()
+    where ResultType : IFluentModel, new()
 {
     AggregateFieldsSelectionManager<T> AggregatesManager { get; }
     IFieldsSelectionManager<T> GroupByFieldsManager { get; }
     IHavingConditionsManager<T> HavingConditionsManager { get; }
     AggregateOrderByManager<T> OrderByManager { get; }
-    DbConnection? Connection { get; }
-    string TableName { get; set; }
 
     IAggregateSelectQuery<T, ResultType> Aggregate(Action<AggregateFieldsSelectionManager<T>> fn);
 

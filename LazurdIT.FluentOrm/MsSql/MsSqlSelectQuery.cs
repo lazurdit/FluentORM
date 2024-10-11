@@ -4,74 +4,130 @@ using System.Data.SqlClient;
 using System.Reflection;
 using System.Text;
 using LazurdIT.FluentOrm.Common;
+using LazurdIT.FluentOrm.Pgsql;
+using Npgsql;
 
 namespace LazurdIT.FluentOrm.MsSql;
 
-public class MsSqlSelectQuery<T> : ISelectQuery<T> where T : IFluentModel, new()
+public class MsSqlSelectQuery<T> : ISelectQuery<T>
+    where T : IFluentModel, new()
 {
     public MsSqlConditionsManager<T> ConditionsManager { get; } = new();
     public OrderByManager<T> OrderByManager { get; } = new();
     public MsSqlFieldsSelectionManager<T> FieldsManager { get; } = new();
 
-    public string TableName { get; set; } = GetTableName();
+    public string TableName { get; set; } = MsSqlDtoMapper<T>.GetTableName();
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
+
+    public string TablePrefix { get; set; } = string.Empty;
+
+    ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    public MsSqlSelectQuery<T> WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (SqlConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (SqlConnection?)connection;
+        return this;
+    }
+
+    public MsSqlSelectQuery<T> WithConnection(SqlConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
+    }
 
     public string ExpressionSymbol => "@";
 
-    private static string GetTableName()
-    {
-        var attribute = typeof(T).GetCustomAttribute<FluentTableAttribute>();
-        string name = attribute?.Name ?? typeof(T).Name;
-        return name;
-    }
-
-    public SqlConnection? SqlConnection { get; set; }
-    DbConnection? ISelectQuery<T>.Connection => SqlConnection;
+    public SqlConnection? Connection { get; set; }
 
     IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
     IFieldsSelectionManager<T> ISelectQuery<T>.FieldsManager => FieldsManager;
 
-    public MsSqlSelectQuery(SqlConnection? sqlConnection = null)
+    public MsSqlSelectQuery(SqlConnection? connection = null)
     {
-        SqlConnection = sqlConnection;
+        Connection = connection;
     }
 
-    public IEnumerable<T> Execute(SqlConnection? sqlConnection = null, int pageNumber = 0, int recordsCount = 0)
+    public IEnumerable<T> Execute(
+        SqlConnection? connection = null,
+        int pageNumber = 0,
+        int recordsCount = 0
+    )
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
-        string includeColumns = FieldsManager.FieldsList.Count > 0 ? string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames()) : "*";
+        string includeColumns =
+            FieldsManager.FieldsList.Count > 0
+                ? string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames())
+                : "*";
 
         try
         {
-            StringBuilder query = new($"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableName}");
+            StringBuilder query =
+                new(
+                    $"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableNameWithPrefix}"
+                );
             var parameters = new List<SqlParameter>();
 
             if (ConditionsManager.WhereConditions.Count > 0)
             {
                 int i = 0;
-                query.Append(" WHERE " + string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol))));
+                query.Append(
+                    " WHERE "
+                        + string.Join(
+                            " AND ",
+                            ConditionsManager.WhereConditions.Select(w =>
+                                w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                            )
+                        )
+                );
 
-                foreach (var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters))
+                foreach (
+                    var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters)
+                )
                 {
-                    parameters.AddRange((SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!);
+                    parameters.AddRange(
+                        (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                    );
                 }
             }
 
             if (OrderByManager.OrderByColumns?.Count > 0)
-                query.Append(" ORDER BY " + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression)));
+                query.Append(
+                    " ORDER BY "
+                        + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
+                );
 
             if (pageNumber > 0 && recordsCount > 0)
-                query.Append($" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY");
+                query.Append(
+                    $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
+                );
 
-            using var command = new SqlCommand(query.ToString(), connection);
+            using var command = new SqlCommand(query.ToString(), dbConnection);
             if (parameters.Count > 0)
                 command.Parameters.AddRange(parameters.ToArray());
 
@@ -88,7 +144,7 @@ public class MsSqlSelectQuery<T> : ISelectQuery<T> where T : IFluentModel, new()
         finally
         {
             if (shouldCloseConnection)
-                connection.Close();
+                dbConnection.Close();
         }
     }
 
@@ -110,7 +166,11 @@ public class MsSqlSelectQuery<T> : ISelectQuery<T> where T : IFluentModel, new()
         return this;
     }
 
-    IEnumerable<T> ISelectQuery<T>.Execute(DbConnection? sqlConnection, int pageNumber, int recordsCount) => Execute((SqlConnection?)sqlConnection, pageNumber, recordsCount);
+    IEnumerable<T> ISelectQuery<T>.Execute(
+        DbConnection? connection,
+        int pageNumber,
+        int recordsCount
+    ) => Execute((SqlConnection?)connection, pageNumber, recordsCount);
 
     ISelectQuery<T> ISelectQuery<T>.OrderBy(Action<OrderByManager<T>> fn) => OrderBy(fn);
 

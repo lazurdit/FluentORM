@@ -10,7 +10,6 @@ public class WhereConditionGroup : IWhereCondition
     public string GetExpression()
     {
         var conditions = Conditions
-            .Where(c => c.IsValid())
             .Select(WhereConditionHandler.BuildWhereClause)
             .Where(clause => !string.IsNullOrEmpty(clause))
             .ToList();
@@ -22,10 +21,5 @@ public class WhereConditionGroup : IWhereCondition
 
         var separator = Method == CompareMethods.And ? " AND " : " OR ";
         return $"({string.Join(separator, conditions)})";
-    }
-
-    public bool IsValid()
-    {
-        throw new NotImplementedException();
     }
 }

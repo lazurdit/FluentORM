@@ -5,7 +5,8 @@ using LazurdIT.FluentOrm.Common;
 
 namespace LazurdIT.FluentOrm.MsSql;
 
-public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
+public class MsSqlInsertQuery<T> : IInsertQuery<T>
+    where T : IFluentModel, new()
 {
     public MsSqlInsertQuery<T> WithFields(Action<MsSqlFieldsSelectionManager<T>> fn)
     {
@@ -13,43 +14,80 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         return this;
     }
 
+    public string TableName { get; set; } = MsSqlDtoMapper<T>.GetTableName();
+
+    public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
+
+    public string TablePrefix { get; set; } = string.Empty;
+
+    ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    public MsSqlInsertQuery<T> WithPrefix(string tablePrefix)
+    {
+        this.TablePrefix = tablePrefix;
+        return this;
+    }
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (SqlConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (SqlConnection?)connection;
+        return this;
+    }
+
+    public MsSqlInsertQuery<T> WithConnection(SqlConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
+    }
+
     public string ExpressionSymbol => "@";
 
     public MsSqlFieldsSelectionManager<T> FieldsManager { get; } = new();
 
-    public string TableName { get; set; } = MsSqlDtoMapper<T>.GetTableName();
-
-    public SqlConnection? SqlConnection { get; set; }
-    public DbConnection? Connection { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+    public SqlConnection? Connection { get; set; }
 
     IFieldsSelectionManager<T> IInsertQuery<T>.FieldsManager => FieldsManager;
 
     public MsSqlInsertQuery(SqlConnection? connection = null)
     {
-        SqlConnection = connection;
+        Connection = connection;
     }
 
-    public T? Execute(T record, bool returnNewRecord = false, SqlConnection? sqlConnection = null)
+    public T? Execute(T record, bool returnNewRecord = false, SqlConnection? connection = null)
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
         string parameterName = "P1_";
         List<string> fieldNames = FieldsManager.FieldsList.GetFinalPropertyNames();
         string fieldsListString = string.Join(",", fieldNames);
-        string fieldsParametersListString = string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames().Select(n => $"@{parameterName}{n}"));
+        string fieldsParametersListString = string.Join(
+            ",",
+            FieldsManager.FieldsList.GetFinalPropertyNames().Select(n => $"@{parameterName}{n}")
+        );
 
-        var insertQuery = $@"insert into {TableName} ({fieldsListString})
+        var insertQuery =
+            $@"insert into {TableNameWithPrefix} ({fieldsListString})
             {(returnNewRecord ? "Output inserted.*" : "")}
             values ({fieldsParametersListString});";
 
-        SqlCommand cmd = new(insertQuery, connection);
+        using var cmd = new SqlCommand (insertQuery, dbConnection);
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 
@@ -70,7 +108,11 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         }
     }
 
-    public int? InsertBulk(T[] records, int chunkSize = int.MaxValue, SqlConnection? sqlConnection = null)
+    public int? InsertBulk(
+        T[] records,
+        int chunkSize = int.MaxValue,
+        SqlConnection? connection = null
+    )
     {
         // Validate input
         if (records == null || records.Length == 0)
@@ -79,13 +121,13 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         int totalInserted = 0;
 
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
 
         try
@@ -95,10 +137,16 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
                 var chunk = records.Skip(i).Take(chunkSize).ToArray();
                 var dataTable = FieldsManager.ToDataTable(chunk);
 
-                using var bulkCopy = new SqlBulkCopy(connection);
-                bulkCopy.DestinationTableName = TableName;
-                dataTable.Columns.Cast<DataColumn>().ToList().ForEach(x =>
-                    bulkCopy.ColumnMappings.Add(new SqlBulkCopyColumnMapping(x.ColumnName, x.ColumnName)));
+                using var bulkCopy = new SqlBulkCopy(dbConnection);
+                bulkCopy.DestinationTableName = TableNameWithPrefix;
+                dataTable
+                    .Columns.Cast<DataColumn>()
+                    .ToList()
+                    .ForEach(x =>
+                        bulkCopy.ColumnMappings.Add(
+                            new SqlBulkCopyColumnMapping(x.ColumnName, x.ColumnName)
+                        )
+                    );
 
                 bulkCopy.WriteToServer(dataTable);
                 totalInserted += chunk.Length;
@@ -106,17 +154,19 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T> where T : IFluentModel, new()
         }
         finally
         {
-            if (shouldCloseConnection && connection != null)
+            if (shouldCloseConnection && dbConnection != null)
             {
-                connection.Close();
-                connection.Dispose();
+                dbConnection.Close();
+                dbConnection.Dispose();
             }
         }
 
         return totalInserted;
     }
 
-    IInsertQuery<T> IInsertQuery<T>.WithFields(Action<IFieldsSelectionManager<T>> fn) => WithFields(fn);
+    IInsertQuery<T> IInsertQuery<T>.WithFields(Action<IFieldsSelectionManager<T>> fn) =>
+        WithFields(fn);
 
-    T? IInsertQuery<T>.Execute(T record, bool returnNewRecord, DbConnection? sqlConnection) => this.Execute(record, returnNewRecord, sqlConnection as SqlConnection);
+    T? IInsertQuery<T>.Execute(T record, bool returnNewRecord, DbConnection? connection) =>
+        this.Execute(record, returnNewRecord, connection as SqlConnection);
 }

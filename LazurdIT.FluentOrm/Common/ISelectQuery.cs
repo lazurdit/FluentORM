@@ -2,14 +2,17 @@
 
 namespace LazurdIT.FluentOrm.Common;
 
-public interface ISelectQuery<T> : IConditionQuery<T> where T : IFluentModel, new()
+public interface ISelectQuery<T> : IConditionQuery<T>, ITableRelatedFluentQuery
+    where T : IFluentModel, new()
 {
     IFieldsSelectionManager<T> FieldsManager { get; }
     OrderByManager<T> OrderByManager { get; }
-    DbConnection? Connection { get; }
-    string TableName { get; set; }
 
-    IEnumerable<T> Execute(DbConnection? sqlConnection = null, int pageNumber = 0, int recordsCount = 0);
+    IEnumerable<T> Execute(
+        DbConnection? connection = null,
+        int pageNumber = 0,
+        int recordsCount = 0
+    );
 
     ISelectQuery<T> OrderBy(Action<OrderByManager<T>> fn);
 

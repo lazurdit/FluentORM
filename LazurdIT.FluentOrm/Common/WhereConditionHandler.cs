@@ -6,7 +6,7 @@ public static class WhereConditionHandler
     {
         if (condition is WhereConditionGroup group)
             return group.GetExpression();
-        else if (condition is ISingleWhereCondition singleCondition && singleCondition.IsValid())
+        else if (condition is ISingleWhereCondition singleCondition)
             return singleCondition.GetExpression();
 
         throw new ArgumentException("Invalid condition provided.");

@@ -7,7 +7,8 @@ public interface IFluentRepository
     string ExpressionSymbol { get; }
 }
 
-public interface IFluentRepository<T> : IFluentRepository where T : IFluentModel, new()
+public interface IFluentRepository<T> : IFluentRepository
+    where T : IFluentModel, new()
 {
     IDeleteQuery<T>? DeleteQuery { get; }
     List<IFluentRelation> InRelations { get; set; }
@@ -16,31 +17,48 @@ public interface IFluentRepository<T> : IFluentRepository where T : IFluentModel
     ISelectQuery<T>? SelectQuery { get; }
     DbConnection? Connection { get; }
     string TableName { get; set; }
+    string? TablePrefix { get; set; }
+    string TableNameWithPrefix { get; }
+
     IUpdateQuery<T>? UpdateQuery { get; }
 
-    IAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(DbConnection? sqlConnection = null) where ResultType : IFluentModel, new();
+    IAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(DbConnection? connection = null)
+        where ResultType : IFluentModel, new();
 
     IFluentRepository<T> Build();
 
     IFluentRepository<T> BuildDefaultQueries();
 
-    IDeleteQuery<T> Delete(DbConnection? sqlConnection = null);
+    IDeleteQuery<T> Delete(DbConnection? connection = null);
 
-    IInsertQuery<T> Insert(DbConnection? sqlConnection = null);
+    IInsertQuery<T> Insert(DbConnection? connection = null);
 
-    bool IsUsedByAnyOutRelation(Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection = null);
+    bool IsUsedByAnyOutRelation(
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection = null
+    );
 
-    bool IsUsedByRelation(IFluentRelation[] FluentRelations, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection = null);
+    bool IsUsedByRelation(
+        IFluentRelation[] FluentRelations,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection = null
+    );
 
-    bool IsUsedByRelation(string FluentRelationName, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection = null);
+    bool IsUsedByRelation(
+        string FluentRelationName,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection = null
+    );
 
-    bool IsUsedByRelation(string[] FluentRelationNames, Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager, DbConnection? sqlConnection = null);
+    bool IsUsedByRelation(
+        string[] FluentRelationNames,
+        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+        DbConnection? connection = null
+    );
 
-    IRawSelectQuery<T> RawSelect(string sqlString, DbConnection? sqlConnection = null);
+    IRawSelectQuery<T> RawSelect(string sqlString, DbConnection? connection = null);
 
-    IFluentRepository<T> ResetIdentity(DbConnection? sqlConnection = null, int newSeed = 0);
+    ISelectQuery<T> Select(DbConnection? connection = null);
 
-    ISelectQuery<T> Select(DbConnection? sqlConnection = null);
-
-    IUpdateQuery<T> Update(DbConnection? sqlConnection = null);
+    IUpdateQuery<T> Update(DbConnection? connection = null);
 }

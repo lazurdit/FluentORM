@@ -1,45 +1,70 @@
-﻿using LazurdIT.FluentOrm.Common;
-using Npgsql;
-using System.Data;
+﻿using System.Data;
 using System.Data.Common;
 using System.Text;
+using LazurdIT.FluentOrm.Common;
+using Npgsql;
 
 namespace LazurdIT.FluentOrm.Pgsql;
 
-public class PgsqlRawSelectQuery<T> : IRawSelectQuery<T> where T : IFluentModel, new()
+public class PgsqlRawSelectQuery<T> : IRawSelectQuery<T>
+    where T : IFluentModel, new()
 {
     public PgsqlConditionsManager<T> ConditionsManager { get; } = new();
     public OrderByManager<T> OrderByManager { get; } = new();
     public PgsqlFieldsSelectionManager<T> FieldsManager { get; } = new();
 
     public string SelectClause { get; set; } = string.Empty;
+
+    IDbConnection? IFluentQuery.Connection
+    {
+        get => Connection;
+        set => Connection = (NpgsqlConnection?)value;
+    }
+
+    IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
+    {
+        this.Connection = (NpgsqlConnection?)connection;
+        return this;
+    }
+
+    public PgsqlRawSelectQuery<T> WithConnection(NpgsqlConnection? connection)
+    {
+        this.Connection = connection;
+        return this;
+    }
+
     public string ExpressionSymbol => "@";
 
-    public NpgsqlConnection? SqlConnection { get; set; }
+    public NpgsqlConnection? Connection { get; set; }
 
     IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
-    DbConnection? IRawSelectQuery<T>.Connection => SqlConnection;
-
     IFieldsSelectionManager<T> IRawSelectQuery<T>.FieldsManager => FieldsManager;
 
-    public PgsqlRawSelectQuery(NpgsqlConnection? sqlConnection = null)
+    public PgsqlRawSelectQuery(NpgsqlConnection? connection = null)
     {
-        SqlConnection = sqlConnection;
+        Connection = connection;
     }
 
-    public IEnumerable<T> Execute(NpgsqlConnection? sqlConnection = null, int pageNumber = 0, int recordsCount = 0)
+    public IEnumerable<T> Execute(
+        NpgsqlConnection? connection = null,
+        int pageNumber = 0,
+        int recordsCount = 0
+    )
     {
         // Use the provided connection or the default one
-        var connection = sqlConnection ?? SqlConnection ?? throw new Exception("ConnectionNotPassed");
+        var dbConnection = connection ?? Connection ?? throw new Exception("ConnectionNotPassed");
 
         // Ensure the connection is open
-        var shouldCloseConnection = connection!.State == ConnectionState.Closed;
+        var shouldCloseConnection = dbConnection!.State == ConnectionState.Closed;
         if (shouldCloseConnection)
         {
-            connection.Open();
+            dbConnection.Open();
         }
-        string includeColumns = FieldsManager.FieldsList.Count > 0 ? string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames()) : "*";
+        string includeColumns =
+            FieldsManager.FieldsList.Count > 0
+                ? string.Join(",", FieldsManager.FieldsList.GetFinalPropertyNames())
+                : "*";
 
         try
         {
@@ -49,21 +74,32 @@ public class PgsqlRawSelectQuery<T> : IRawSelectQuery<T> where T : IFluentModel,
             if (ConditionsManager.WhereConditions.Count > 0)
             {
                 int i = 0;
-                query.Append($" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)))}");
+                query.Append(
+                    $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)))}"
+                );
 
-                foreach (var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters))
+                foreach (
+                    var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters)
+                )
                 {
-                    parameters.AddRange((NpgsqlParameter[])condition.GetDbParameters(ExpressionSymbol)!);
+                    parameters.AddRange(
+                        (NpgsqlParameter[])condition.GetDbParameters(ExpressionSymbol)!
+                    );
                 }
             }
 
             if (OrderByManager.OrderByColumns?.Count > 0)
-                query.Append(" ORDER BY " + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression)));
+                query.Append(
+                    " ORDER BY "
+                        + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
+                );
 
             if (pageNumber > 0 && recordsCount > 0)
-                query.Append($" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY");
+                query.Append(
+                    $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
+                );
 
-            using var command = new NpgsqlCommand(query.ToString(), connection);
+            using var command = new NpgsqlCommand(query.ToString(), dbConnection);
             if (parameters.Count > 0)
                 command.Parameters.AddRange(parameters.ToArray());
 
@@ -79,7 +115,7 @@ public class PgsqlRawSelectQuery<T> : IRawSelectQuery<T> where T : IFluentModel,
         finally
         {
             if (shouldCloseConnection)
-                connection.Close();
+                dbConnection.Close();
         }
     }
 
@@ -105,7 +141,12 @@ public class PgsqlRawSelectQuery<T> : IRawSelectQuery<T> where T : IFluentModel,
 
     IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
 
-    IEnumerable<T> IRawSelectQuery<T>.Execute(DbConnection? sqlConnection, int pageNumber, int recordsCount) => Execute((NpgsqlConnection?)sqlConnection, pageNumber, recordsCount);
+    IEnumerable<T> IRawSelectQuery<T>.Execute(
+        DbConnection? connection,
+        int pageNumber,
+        int recordsCount
+    ) => Execute((NpgsqlConnection?)connection, pageNumber, recordsCount);
 
-    IRawSelectQuery<T> IRawSelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) => Returns(fn);
+    IRawSelectQuery<T> IRawSelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) =>
+        Returns(fn);
 }
