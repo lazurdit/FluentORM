@@ -89,7 +89,7 @@ public class OracleInsertQuery<T> : IInsertQuery<T>
             $@"insert into {TableNameWithPrefix} ({fieldsListString})
                 values ({fieldsParametersListString}) {(returnNewRecord ? $" returning  {returnFieldsParametersListString}" : "")}";
 
-        OracleCommand cmd = new(insertQuery, dbConnection) { BindByName = true };
+        using var cmd = new OracleCommand(insertQuery, dbConnection) { BindByName = true };
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 

@@ -86,7 +86,7 @@ public class PgsqlInsertQuery<T> : IInsertQuery<T>
             $@"insert into {TableNameWithPrefix} ({fieldsListString})
             values ({fieldsParametersListString}) {(returnNewRecord ? "RETURNING *" : "")};";
 
-        NpgsqlCommand cmd = new(insertQuery, dbConnection);
+        using var cmd = new NpgsqlCommand(insertQuery, dbConnection);
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 

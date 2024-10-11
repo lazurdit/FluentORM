@@ -87,7 +87,7 @@ public class MsSqlInsertQuery<T> : IInsertQuery<T>
             {(returnNewRecord ? "Output inserted.*" : "")}
             values ({fieldsParametersListString});";
 
-        SqlCommand cmd = new(insertQuery, dbConnection);
+        using var cmd = new SqlCommand (insertQuery, dbConnection);
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 

@@ -87,7 +87,7 @@ public class MySqlInsertQuery<T> : IInsertQuery<T>
             $@"insert into {TableNameWithPrefix} ({fieldsListString})
                 values ({fieldsParametersListString});";
 
-        MySqlCommand cmd = new(insertQuery, dbConnection);
+        using var cmd = new MySqlCommand(insertQuery, dbConnection);
 
         cmd.Parameters.AddRange(FieldsManager.GetSqlParameters(record, parameterName).ToArray());
 
