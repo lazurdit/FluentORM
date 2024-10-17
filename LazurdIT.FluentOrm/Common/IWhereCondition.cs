@@ -1,6 +1,7 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface IWhereCondition
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    string GetExpression();
+    public interface IWhereCondition
+    {
+        string GetExpression();
+    }
 }

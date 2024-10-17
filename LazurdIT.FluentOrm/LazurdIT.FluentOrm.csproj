@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<Authors>Lazurd IT Development Team</Authors>
-		<Company>Lazurd IT</Company> 
+		<Company>Lazurd IT</Company>
 		<IsPublishable>False</IsPublishable>
 		<Title>Fluent ORM</Title>
 		<PackageId>LazurdIT.FluentOrm</PackageId>
@@ -15,16 +15,12 @@
 		<Copyright>2024</Copyright>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+		<IncludeContentInPack>true</IncludeContentInPack>
 	</PropertyGroup>
-
 	<ItemGroup>
 		<Compile Remove="Lazurd\**" />
 		<EmbeddedResource Remove="Lazurd\**" />
 		<None Remove="Lazurd\**" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Remove="LazurdIT.FluentOrm.nuspec" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -47,10 +43,13 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="license.txt">
-		  <PackagePath>\</PackagePath>
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-		  <Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>True</Pack>
+		</None>
+		<None Include="license.txt">
+			<PackagePath></PackagePath>
+			<Pack>True</Pack>
 		</None>
 	</ItemGroup>
-
 </Project>

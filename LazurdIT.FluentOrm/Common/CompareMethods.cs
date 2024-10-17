@@ -1,7 +1,8 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public enum CompareMethods
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    And,
-    Or
+    public enum CompareMethods
+    {
+        And,
+        Or
+    }
 }

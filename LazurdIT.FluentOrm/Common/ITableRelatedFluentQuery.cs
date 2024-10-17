@@ -1,12 +1,13 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface ITableRelatedFluentQuery : IFluentQuery
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    string TablePrefix { get; set; }
+    public interface ITableRelatedFluentQuery : IFluentQuery
+    {
+        string? TablePrefix { get; set; }
 
-    string TableName { get; set; }
+        string TableName { get; set; }
 
-    string TableNameWithPrefix { get; }
+        string TableNameWithPrefix { get; }
 
-    ITableRelatedFluentQuery WithPrefix(string prefix);
+        ITableRelatedFluentQuery WithPrefix(string prefix);
+    }
 }

@@ -1,4 +1,6 @@
 ﻿using LazurdIT.FluentOrm.Common;
+using System.Collections.Generic;
+using System.Linq;
 
 public class FluentAggregateTypeDictionary : Dictionary<string, FluentAggregateTypeInfo>
 {

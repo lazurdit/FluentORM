@@ -1,6 +1,5 @@
 ﻿using LazurdIT.FluentOrm.Common;
 using LazurdIT.FluentOrm.Oracle;
-using Oracle.ManagedDataAccess.Client;
 using System.Runtime.CompilerServices;
 
 namespace Samples.DAL.Models;

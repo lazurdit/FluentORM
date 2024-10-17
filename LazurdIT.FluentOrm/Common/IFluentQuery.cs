@@ -1,12 +1,13 @@
 ﻿using System.Data;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public interface IFluentQuery
+namespace LazurdIT.FluentOrm.Common
 {
-    string ExpressionSymbol { get; }
+    public interface IFluentQuery
+    {
+        string ExpressionSymbol { get; }
 
-    IDbConnection? Connection { get; set; }
+        IDbConnection? Connection { get; set; }
 
-    IFluentQuery WithConnection(IDbConnection? connection);
+        IFluentQuery WithConnection(IDbConnection? connection);
+    }
 }

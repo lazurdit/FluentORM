@@ -1,11 +1,14 @@
-﻿using System.Data.SqlClient;
+﻿using System.Collections.Generic;
+using System.Data.SqlClient;
+using System.Linq;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public class MsSqlFluentUpdateCriteriaManager<T> : FluentUpdateCriteriaManager<T> where T : IFluentModel, new()
+namespace LazurdIT.FluentOrm.Common
 {
-    public IEnumerable<SqlParameter> GetSqlParameters(T? instance, string parameterName)
+    public class MsSqlFluentUpdateCriteriaManager<T> : FluentUpdateCriteriaManager<T> where T : IFluentModel, new()
     {
-        return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+        public IEnumerable<SqlParameter> GetSqlParameters(T? instance, string parameterName)
+        {
+            return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+        }
     }
 }

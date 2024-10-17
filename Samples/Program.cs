@@ -11,7 +11,6 @@ using Samples.Migrations;
 using FluentMigrator.Runner;
 using Samples.DAL.Repositories.Oracle;
 using Oracle.ManagedDataAccess.Client;
-using LazurdIT.FluentOrm.Common;
 
 namespace Samples;
 

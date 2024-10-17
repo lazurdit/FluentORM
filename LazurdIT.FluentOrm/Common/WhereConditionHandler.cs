@@ -1,14 +1,17 @@
-﻿namespace LazurdIT.FluentOrm.Common;
+﻿using System;
 
-public static class WhereConditionHandler
+namespace LazurdIT.FluentOrm.Common
 {
-    public static string BuildWhereClause(this IWhereCondition condition)
+    public static class WhereConditionHandler
     {
-        if (condition is WhereConditionGroup group)
-            return group.GetExpression();
-        else if (condition is ISingleWhereCondition singleCondition)
-            return singleCondition.GetExpression();
+        public static string BuildWhereClause(this IWhereCondition condition)
+        {
+            if (condition is WhereConditionGroup group)
+                return group.GetExpression();
+            else if (condition is ISingleWhereCondition singleCondition)
+                return singleCondition.GetExpression();
 
-        throw new ArgumentException("Invalid condition provided.");
+            throw new ArgumentException("Invalid condition provided.");
+        }
     }
 }

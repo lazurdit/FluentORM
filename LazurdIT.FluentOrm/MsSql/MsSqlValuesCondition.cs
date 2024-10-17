@@ -1,15 +1,16 @@
-﻿using System.Data.Common;
+﻿using LazurdIT.FluentOrm.Common;
+using System.Data.Common;
 using System.Data.SqlClient;
-using LazurdIT.FluentOrm.Common;
 
-namespace LazurdIT.FluentOrm.MsSql;
-
-public abstract class MsSqlValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
+namespace LazurdIT.FluentOrm.MsSql
 {
-    public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
-
-    public virtual SqlParameter[]? GetSqlParameters(string expressionSymbol)
+    public abstract class MsSqlValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
     {
-        return new[] { new SqlParameter(ParameterName, Value) };
+        public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+
+        public virtual SqlParameter[]? GetSqlParameters(string expressionSymbol)
+        {
+            return new[] { new SqlParameter(ParameterName, Value) };
+        }
     }
 }

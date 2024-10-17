@@ -8,6 +8,10 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 
 ## Release Notes 
+# 1.1.0
+- feature: Added multi-target frameworks (Dotnet 5.0, 6.0, 7.0, 8.0).
+- enhancement: performance enhancements.
+
 # 1.0.0
 - fix: Added .WithConnection() method to allow the user to specify the connection string.
 - fix: Added .WithTablePrefix() method to allow the user to specify the table prefix.

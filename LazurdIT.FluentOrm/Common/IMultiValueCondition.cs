@@ -1,6 +1,7 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface IMultiValueCondition<T, TProperty>
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    TProperty[]? Values { get; set; }
+    public interface IMultiValueCondition<T, TProperty>
+    {
+        TProperty[]? Values { get; set; }
+    }
 }

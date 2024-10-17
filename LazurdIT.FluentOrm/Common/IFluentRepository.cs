@@ -1,64 +1,67 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Collections.Generic;
+using System.Data.Common;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public interface IFluentRepository
+namespace LazurdIT.FluentOrm.Common
 {
-    string ExpressionSymbol { get; }
-}
+    public interface IFluentRepository
+    {
+        string ExpressionSymbol { get; }
+    }
 
-public interface IFluentRepository<T> : IFluentRepository
-    where T : IFluentModel, new()
-{
-    IDeleteQuery<T>? DeleteQuery { get; }
-    List<IFluentRelation> InRelations { get; set; }
-    IInsertQuery<T>? InsertQuery { get; }
-    List<IFluentRelation> OutRelations { get; set; }
-    ISelectQuery<T>? SelectQuery { get; }
-    DbConnection? Connection { get; }
-    string TableName { get; set; }
-    string? TablePrefix { get; set; }
-    string TableNameWithPrefix { get; }
+    public interface IFluentRepository<T> : IFluentRepository
+        where T : IFluentModel, new()
+    {
+        IDeleteQuery<T>? DeleteQuery { get; }
+        List<IFluentRelation> InRelations { get; set; }
+        IInsertQuery<T>? InsertQuery { get; }
+        List<IFluentRelation> OutRelations { get; set; }
+        ISelectQuery<T>? SelectQuery { get; }
+        DbConnection? Connection { get; }
+        string TableName { get; set; }
+        string? TablePrefix { get; set; }
+        string TableNameWithPrefix { get; }
 
-    IUpdateQuery<T>? UpdateQuery { get; }
+        IUpdateQuery<T>? UpdateQuery { get; }
 
-    IAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(DbConnection? connection = null)
-        where ResultType : IFluentModel, new();
+        IAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(DbConnection? connection = null)
+            where ResultType : IFluentModel, new();
 
-    IFluentRepository<T> Build();
+        IFluentRepository<T> Build();
 
-    IFluentRepository<T> BuildDefaultQueries();
+        IFluentRepository<T> BuildDefaultQueries();
 
-    IDeleteQuery<T> Delete(DbConnection? connection = null);
+        IDeleteQuery<T> Delete(DbConnection? connection = null);
 
-    IInsertQuery<T> Insert(DbConnection? connection = null);
+        IInsertQuery<T> Insert(DbConnection? connection = null);
 
-    bool IsUsedByAnyOutRelation(
-        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
-        DbConnection? connection = null
-    );
+        bool IsUsedByAnyOutRelation(
+            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            DbConnection? connection = null
+        );
 
-    bool IsUsedByRelation(
-        IFluentRelation[] FluentRelations,
-        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
-        DbConnection? connection = null
-    );
+        bool IsUsedByRelation(
+            IFluentRelation[] FluentRelations,
+            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            DbConnection? connection = null
+        );
 
-    bool IsUsedByRelation(
-        string FluentRelationName,
-        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
-        DbConnection? connection = null
-    );
+        bool IsUsedByRelation(
+            string FluentRelationName,
+            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            DbConnection? connection = null
+        );
 
-    bool IsUsedByRelation(
-        string[] FluentRelationNames,
-        Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
-        DbConnection? connection = null
-    );
+        bool IsUsedByRelation(
+            string[] FluentRelationNames,
+            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            DbConnection? connection = null
+        );
 
-    IRawSelectQuery<T> RawSelect(string sqlString, DbConnection? connection = null);
+        IRawSelectQuery<T> RawSelect(string sqlString, DbConnection? connection = null);
 
-    ISelectQuery<T> Select(DbConnection? connection = null);
+        ISelectQuery<T> Select(DbConnection? connection = null);
 
-    IUpdateQuery<T> Update(DbConnection? connection = null);
+        IUpdateQuery<T> Update(DbConnection? connection = null);
+    }
 }

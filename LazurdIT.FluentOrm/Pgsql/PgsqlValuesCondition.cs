@@ -2,14 +2,15 @@
 using Npgsql;
 using System.Data.Common;
 
-namespace LazurdIT.FluentOrm.Pgsql;
-
-public abstract class PgsqlValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
+namespace LazurdIT.FluentOrm.Pgsql
 {
-    public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
-
-    public virtual NpgsqlParameter[]? GetSqlParameters(string expressionSymbol)
+    public abstract class PgsqlValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
     {
-        return new[] { new NpgsqlParameter(ParameterName, Value) };
+        public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+
+        public virtual NpgsqlParameter[]? GetSqlParameters(string expressionSymbol)
+        {
+            return new[] { new NpgsqlParameter(ParameterName, Value) };
+        }
     }
 }

@@ -1,7 +1,8 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public enum OrderDirections
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    Ascending,
-    Descending
+    public enum OrderDirections
+    {
+        Ascending,
+        Descending
+    }
 }

@@ -1,38 +1,42 @@
-﻿namespace LazurdIT.FluentOrm.Common;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public class FluentTypeDictionary : Dictionary<string, FluentTypeInfo>
+namespace LazurdIT.FluentOrm.Common
 {
-    public List<string> GetFinalPropertyNames() => this.Select(s => s.Value.FinalPropertyName).ToList();
-
-    public FluentTypeDictionary() : base()
+    public class FluentTypeDictionary : Dictionary<string, FluentTypeInfo>
     {
-    }
+        public List<string> GetFinalPropertyNames() => this.Select(s => s.Value.FinalPropertyName).ToList();
 
-    public FluentTypeDictionary(IDictionary<string, FluentTypeInfo> dictionary) : base(dictionary)
-    {
-    }
+        public FluentTypeDictionary() : base()
+        {
+        }
 
-    public FluentTypeDictionary(IDictionary<string, FluentTypeInfo> dictionary, IEqualityComparer<string>? comparer) : base(dictionary, comparer)
-    {
-    }
+        public FluentTypeDictionary(IDictionary<string, FluentTypeInfo> dictionary) : base(dictionary)
+        {
+        }
 
-    public FluentTypeDictionary(IEnumerable<KeyValuePair<string, FluentTypeInfo>> collection) : base(collection)
-    {
-    }
+        public FluentTypeDictionary(IDictionary<string, FluentTypeInfo> dictionary, IEqualityComparer<string>? comparer) : base(dictionary, comparer)
+        {
+        }
 
-    public FluentTypeDictionary(IEnumerable<KeyValuePair<string, FluentTypeInfo>> collection, IEqualityComparer<string>? comparer) : base(collection, comparer)
-    {
-    }
+        public FluentTypeDictionary(IEnumerable<KeyValuePair<string, FluentTypeInfo>> collection) : base(collection)
+        {
+        }
 
-    public FluentTypeDictionary(IEqualityComparer<string>? comparer) : base(comparer)
-    {
-    }
+        public FluentTypeDictionary(IEnumerable<KeyValuePair<string, FluentTypeInfo>> collection, IEqualityComparer<string>? comparer) : base(collection, comparer)
+        {
+        }
 
-    public FluentTypeDictionary(int capacity) : base(capacity)
-    {
-    }
+        public FluentTypeDictionary(IEqualityComparer<string>? comparer) : base(comparer)
+        {
+        }
 
-    public FluentTypeDictionary(int capacity, IEqualityComparer<string>? comparer) : base(capacity, comparer)
-    {
+        public FluentTypeDictionary(int capacity) : base(capacity)
+        {
+        }
+
+        public FluentTypeDictionary(int capacity, IEqualityComparer<string>? comparer) : base(capacity, comparer)
+        {
+        }
     }
 }

@@ -1,18 +1,19 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public class ItemUpdateExpression : IUpdateExpression
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    public string GetExpression(string parameterName, string expressionSymbol)
+    public class ItemUpdateExpression : IUpdateExpression
     {
-        return $"{AttributeName} = {expressionSymbol}{parameterName}{AttributeName}";
-    }
+        public string GetExpression(string parameterName, string expressionSymbol)
+        {
+            return $"{AttributeName} = {expressionSymbol}{parameterName}{AttributeName}";
+        }
 
-    public string AttributeName { get; }
+        public string AttributeName { get; }
 
-    public bool HasParameter => true;
+        public bool HasParameter => true;
 
-    public ItemUpdateExpression(string attributeName)
-    {
-        AttributeName = attributeName;
+        public ItemUpdateExpression(string attributeName)
+        {
+            AttributeName = attributeName;
+        }
     }
 }

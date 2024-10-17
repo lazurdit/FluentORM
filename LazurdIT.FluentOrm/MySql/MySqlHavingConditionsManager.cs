@@ -1,21 +1,24 @@
-﻿using System.Linq.Expressions;
-using LazurdIT.FluentOrm.Common;
+﻿using LazurdIT.FluentOrm.Common;
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 
-namespace LazurdIT.FluentOrm.MySql;
-
-public class MySqlHavingConditionsManager<T> : IHavingConditionsManager<T> where T : IFluentModel, new()
+namespace LazurdIT.FluentOrm.MySql
 {
-    public List<ICondition> HavingConditions { get; } = new();
-
-    public MySqlHavingConditionsManager()
+    public class MySqlHavingConditionsManager<T> : IHavingConditionsManager<T> where T : IFluentModel, new()
     {
-    }
+        public List<ICondition> HavingConditions { get; } = new();
 
-    public MySqlHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, MySqlFluentAggregateTypeInfoOp, ICondition> opFunc)
-    {
-        var typeInfo = typeInfoFunc(property);
+        public MySqlHavingConditionsManager()
+        {
+        }
 
-        HavingConditions.Add(opFunc(property, new MySqlFluentAggregateTypeInfoOp(typeInfo)));
-        return this;
+        public MySqlHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, MySqlFluentAggregateTypeInfoOp, ICondition> opFunc)
+        {
+            var typeInfo = typeInfoFunc(property);
+
+            HavingConditions.Add(opFunc(property, new MySqlFluentAggregateTypeInfoOp(typeInfo)));
+            return this;
+        }
     }
 }
