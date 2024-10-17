@@ -1,6 +1,10 @@
-﻿namespace LazurdIT.FluentOrm.Common;
+﻿using System.Collections.Generic;
+using System.Linq;
 
-public class RelationFieldsCollection : List<IFluentRelation>
+namespace LazurdIT.FluentOrm.Common
 {
-    public IFluentRelation this[string relationName] => this.FirstOrDefault(r => r.RelationName.Equals(relationName)) ?? throw new KeyNotFoundException();
+    public class RelationFieldsCollection : List<IFluentRelation>
+    {
+        public IFluentRelation this[string relationName] => this.FirstOrDefault(r => r.RelationName.Equals(relationName)) ?? throw new KeyNotFoundException();
+    }
 }

@@ -1,40 +1,42 @@
-﻿using System.Linq.Expressions;
+﻿using System;
+using System.Linq.Expressions;
 using System.Reflection;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public static class AttributeResolver
+namespace LazurdIT.FluentOrm.Common
 {
-    public static string ResolveTableName<T>() where T : IFluentModel, new()
+    public static class AttributeResolver
     {
-        var attribute = typeof(T).GetCustomAttribute<FluentTableAttribute>();
-        string name = attribute?.Name ?? typeof(T).Name;
-        return name;
-    }
-
-    public static string ResolveFieldName<T, TProperty>(Expression<Func<T, TProperty>> targetProperty) where T : IFluentModel
-    {
-        // Get the property name from the expression
-        if (targetProperty.Body is MemberExpression memberExpression)
+        public static string ResolveTableName<T>() where T : IFluentModel, new()
         {
-            var propertyName = memberExpression.Member.Name;
-
-            // Retrieve the type-specific cache
-            var typeCache = TypeCache.GetTypeCache<T>();
-
-            if (typeCache.TryGetValue(propertyName, out var propertyInfo))
-                return propertyInfo.FinalPropertyName;
+            var attribute = typeof(T).GetCustomAttribute<FluentTableAttribute>();
+            string name = attribute?.Name ?? typeof(T).Name;
+            return name;
         }
 
-        return string.Empty;
-    }
+        public static string ResolveFieldName<T, TProperty>(Expression<Func<T, TProperty>> targetProperty) where T : IFluentModel
+        {
+            // Get the property name from the expression
+            if (targetProperty.Body is MemberExpression memberExpression)
+            {
+                var propertyName = memberExpression.Member.Name;
 
-    public static string ResolvePropertyName<T, TProperty>(Expression<Func<T, TProperty>> targetProperty) where T : IFluentModel
-    {
-        // Get the property name from the expression
-        if (targetProperty.Body is MemberExpression memberExpression)
-            return memberExpression.Member.Name;
+                // Retrieve the type-specific cache
+                var typeCache = TypeCache.GetTypeCache<T>();
 
-        return targetProperty.Name ?? string.Empty;
+                if (typeCache.TryGetValue(propertyName, out var propertyInfo))
+                    return propertyInfo.FinalPropertyName;
+            }
+
+            return string.Empty;
+        }
+
+        public static string ResolvePropertyName<T, TProperty>(Expression<Func<T, TProperty>> targetProperty) where T : IFluentModel
+        {
+            // Get the property name from the expression
+            if (targetProperty.Body is MemberExpression memberExpression)
+                return memberExpression.Member.Name;
+
+            return targetProperty.Name ?? string.Empty;
+        }
     }
 }

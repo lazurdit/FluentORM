@@ -1,19 +1,20 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public enum WhereConditions
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    Equal,
-    NotEqual,
-    GreaterThan,
-    GreaterThanOrEqual,
-    LessThan,
-    LessThanOrEqual,
-    Like,
-    NotLike,
-    In,
-    NotIn,
-    IsEmpty,
-    IsNotEmpty,
-    InRange,
-    NotInrange
+    public enum WhereConditions
+    {
+        Equal,
+        NotEqual,
+        GreaterThan,
+        GreaterThanOrEqual,
+        LessThan,
+        LessThanOrEqual,
+        Like,
+        NotLike,
+        In,
+        NotIn,
+        IsEmpty,
+        IsNotEmpty,
+        InRange,
+        NotInrange
+    }
 }

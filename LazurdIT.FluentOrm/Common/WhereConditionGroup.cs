@@ -1,25 +1,28 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
+using System.Linq;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public class WhereConditionGroup : IWhereCondition
+namespace LazurdIT.FluentOrm.Common
 {
-    public CompareMethods Method { get; set; }
-    public List<IWhereCondition> Conditions { get; set; } = new();
-
-    public string GetExpression()
+    public class WhereConditionGroup : IWhereCondition
     {
-        var conditions = Conditions
-            .Select(WhereConditionHandler.BuildWhereClause)
-            .Where(clause => !string.IsNullOrEmpty(clause))
-            .ToList();
+        public CompareMethods Method { get; set; }
+        public List<IWhereCondition> Conditions { get; set; } = new();
 
-        if (!conditions.Any())
+        public string GetExpression()
         {
-            return string.Empty;
-        }
+            var conditions = Conditions
+                .Select(WhereConditionHandler.BuildWhereClause)
+                .Where(clause => !string.IsNullOrEmpty(clause))
+                .ToList();
 
-        var separator = Method == CompareMethods.And ? " AND " : " OR ";
-        return $"({string.Join(separator, conditions)})";
+            if (!conditions.Any())
+            {
+                return string.Empty;
+            }
+
+            var separator = Method == CompareMethods.And ? " AND " : " OR ";
+            return $"({string.Join(separator, conditions)})";
+        }
     }
 }

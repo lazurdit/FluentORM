@@ -1,13 +1,16 @@
-﻿namespace LazurdIT.FluentOrm.Common;
+﻿using System.Collections.Generic;
 
-public interface IFluentRelation
+namespace LazurdIT.FluentOrm.Common
 {
-    string? SourceTablePrefix { get; }
-    string SourceTableName { get; }
-    List<RelationFields> Fields { get; }
+    public interface IFluentRelation
+    {
+        string? SourceTablePrefix { get; }
+        string SourceTableName { get; }
+        List<RelationFields> Fields { get; }
 
-    string TargetTableName { get; }
-    string? TargetTablePrefix { get; }
+        string TargetTableName { get; }
+        string? TargetTablePrefix { get; }
 
-    string RelationName { get; }
+        string RelationName { get; }
+    }
 }

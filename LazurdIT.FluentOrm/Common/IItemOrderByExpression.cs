@@ -1,7 +1,8 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface IItemOrderByExpression
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    string Expression { get; }
-    bool IsRandom { get; }
+    public interface IItemOrderByExpression
+    {
+        string Expression { get; }
+        bool IsRandom { get; }
+    }
 }

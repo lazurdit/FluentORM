@@ -1,5 +1,6 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface ISingleWhereCondition : IWhereCondition
+﻿namespace LazurdIT.FluentOrm.Common
 {
+    public interface ISingleWhereCondition : IWhereCondition
+    {
+    }
 }

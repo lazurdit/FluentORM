@@ -1,11 +1,12 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public enum AggregationMethods
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    Sum,
-    Count,
-    Avg,
-    Min,
-    Max,
-    Custom
+    public enum AggregationMethods
+    {
+        Sum,
+        Count,
+        Avg,
+        Min,
+        Max,
+        Custom
+    }
 }

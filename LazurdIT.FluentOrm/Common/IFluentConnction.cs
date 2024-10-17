@@ -1,4 +1,5 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public interface IFluentConnction
-{ }
+﻿namespace LazurdIT.FluentOrm.Common
+{
+    public interface IFluentConnction
+    { }
+}

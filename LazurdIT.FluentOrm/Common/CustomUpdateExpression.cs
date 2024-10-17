@@ -1,22 +1,23 @@
-﻿namespace LazurdIT.FluentOrm.Common;
-
-public class CustomUpdateExpression : IUpdateExpression
+﻿namespace LazurdIT.FluentOrm.Common
 {
-    public string AttributeName { get; }
-    private readonly string expression;
-    private readonly string replacement;
-
-    public CustomUpdateExpression(string attributeName, string expression, string replacement = "%")
+    public class CustomUpdateExpression : IUpdateExpression
     {
-        AttributeName = attributeName;
-        this.expression = expression;
-        this.replacement = replacement;
-    }
+        public string AttributeName { get; }
+        private readonly string expression;
+        private readonly string replacement;
 
-    public string GetExpression(string _, string _2)
-    {
-        return $"{AttributeName} = {expression.Replace(replacement, AttributeName)}";
-    }
+        public CustomUpdateExpression(string attributeName, string expression, string replacement = "%")
+        {
+            AttributeName = attributeName;
+            this.expression = expression;
+            this.replacement = replacement;
+        }
 
-    public bool HasParameter { get; }
+        public string GetExpression(string _, string _2)
+        {
+            return $"{AttributeName} = {expression.Replace(replacement, AttributeName)}";
+        }
+
+        public bool HasParameter { get; }
+    }
 }

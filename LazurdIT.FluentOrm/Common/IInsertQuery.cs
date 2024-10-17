@@ -1,13 +1,15 @@
-﻿using System.Data.Common;
+﻿using System;
+using System.Data.Common;
 
-namespace LazurdIT.FluentOrm.Common;
-
-public interface IInsertQuery<T> : ITableRelatedFluentQuery
-    where T : IFluentModel, new()
+namespace LazurdIT.FluentOrm.Common
 {
-    IFieldsSelectionManager<T> FieldsManager { get; }
+    public interface IInsertQuery<T> : ITableRelatedFluentQuery
+        where T : IFluentModel, new()
+    {
+        IFieldsSelectionManager<T> FieldsManager { get; }
 
-    T? Execute(T record, bool returnNewRecord = false, DbConnection? connection = null);
+        T? Execute(T record, bool returnNewRecord = false, DbConnection? connection = null);
 
-    IInsertQuery<T> WithFields(Action<IFieldsSelectionManager<T>> fn);
+        IInsertQuery<T> WithFields(Action<IFieldsSelectionManager<T>> fn);
+    }
 }
