@@ -28,7 +28,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public override IEnumerable<OracleParameter> GetSqlParameters(T instance, string parameterName)
         {
-            return FieldsList.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return FieldsList.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override OracleFieldsSelectionManager<T> ExcludeAll()

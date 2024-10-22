@@ -27,7 +27,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public override IEnumerable<MySqlParameter> GetSqlParameters(T instance, string parameterName)
         {
-            return FieldsList.Select(t => new MySqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return FieldsList.Select(t => new MySqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override MySqlFieldsSelectionManager<T> ExcludeAll()

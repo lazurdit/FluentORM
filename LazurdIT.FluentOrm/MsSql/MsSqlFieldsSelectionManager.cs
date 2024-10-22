@@ -28,7 +28,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public override IEnumerable<SqlParameter> GetSqlParameters(T instance, string parameterName)
         {
-            return FieldsList.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return FieldsList.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override MsSqlFieldsSelectionManager<T> ExcludeAll()

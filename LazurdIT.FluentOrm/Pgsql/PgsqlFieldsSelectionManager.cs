@@ -28,7 +28,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public override IEnumerable<NpgsqlParameter> GetSqlParameters(T instance, string parameterName)
         {
-            return FieldsList.Select(t => new NpgsqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return FieldsList.Select(t => new NpgsqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override PgsqlFieldsSelectionManager<T> ExcludeAll()
