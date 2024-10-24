@@ -13,6 +13,7 @@
 		<PackageId>LazurdIT.FluentORM</PackageId>
 		<Product>LazurdIT.FluentORM</Product>
 		<Copyright>2024</Copyright>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<IncludeContentInPack>true</IncludeContentInPack>
@@ -52,5 +53,6 @@
 			<PackagePath></PackagePath>
 			<Pack>True</Pack>
 		</None>
+		<None Include="assets\readme.md" Pack="true" PackagePath="\"/>
 	</ItemGroup>
 </Project>
