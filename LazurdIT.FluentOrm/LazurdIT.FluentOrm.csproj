@@ -5,13 +5,13 @@
 		<ImplicitUsings>disable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-		<Version>1.1.1</Version>
+		<Version>1.2.0</Version>
 		<Authors>Lazurd IT Development Team</Authors>
 		<Company>Lazurd IT</Company>
 		<IsPublishable>False</IsPublishable>
 		<Title>Fluent ORM</Title>
-		<PackageId>LazurdIT.FluentOrm</PackageId>
-		<Product>LazurdIT.FluentOrm</Product>
+		<PackageId>LazurdIT.FluentORM</PackageId>
+		<Product>LazurdIT.FluentORM</Product>
 		<Copyright>2024</Copyright>
 		<PackageLicenseFile>license.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
@@ -28,6 +28,7 @@
 		<PackageReference Include="Npgsql" Version="6.0.12" />
 		<PackageReference Include="Oracle.ManagedDataAccess.Core" Version="23.5.1" />
 		<PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
+		<PackageReference Include="System.Data.SQLite" Version="1.0.119" />
 	</ItemGroup>
 
 	<ItemGroup>

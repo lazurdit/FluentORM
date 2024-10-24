@@ -8,6 +8,9 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 
 ## Release Notes 
+# 1.2.0
+- Feature: Added SQLite support.
+
 # 1.1.1
 - Bug fix: Error when inserting a null value field.
 

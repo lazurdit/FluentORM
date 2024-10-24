@@ -9,16 +9,15 @@
 
   <ItemGroup>
     <PackageReference Include="Bogus" Version="35.6.1" />
-    <PackageReference Include="FluentMigrator" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Extensions.Oracle" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Extensions.Postgres" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.Oracle" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.SQLite" Version="5.2.0" />
-    <PackageReference Include="FluentMigrator.Runner.SqlServer" Version="5.2.0" />
-    <PackageReference Include="Lazurd.FluentORM" Version="1.1.0" />
-    <PackageReference Include="Npgsql" Version="6.0.12" />
+    <PackageReference Include="FluentMigrator" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Extensions.Oracle" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Extensions.Postgres" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.MySql" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.Oracle" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.SQLite" Version="6.2.0" />
+    <PackageReference Include="FluentMigrator.Runner.SqlServer" Version="6.2.0" />
+    <PackageReference Include="Npgsql" Version="8.0.5" />
     <PackageReference Include="System.Data.SqlClient" Version="4.8.6" />
   </ItemGroup>
 

@@ -1,5 +1,6 @@
 ﻿using LazurdIT.FluentOrm.MsSql;
 using LazurdIT.FluentOrm.Pgsql;
+using LazurdIT.FluentOrm.SQLite;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -82,6 +83,32 @@ namespace LazurdIT.FluentOrm.Common
                 foreach (var property in properties)
                 {
                     row[property.Name] = property.GetValue(item) ?? DBNull.Value;
+                }
+                dataTable.Rows.Add(row);
+            }
+
+            return dataTable;
+        }
+
+        public static DataTable ToDataTable<T>(this SQLiteFieldsSelectionManager<T> fieldsSelectionManager, IEnumerable<T> items) where T : IFluentModel, new()
+        => fieldsSelectionManager.ToDataTable(null, items);
+
+        public static DataTable ToDataTable<T>(this SQLiteFieldsSelectionManager<T> fieldsSelectionManager, string? tableName, IEnumerable<T> items) where T : IFluentModel, new()
+        {
+            var dataTable = new DataTable(tableName ?? typeof(T).Name);
+
+            foreach (var field in fieldsSelectionManager.FieldsList)
+            {
+                //dataTable.Columns.Add(field.Value.FinalPropertyName);
+                dataTable.Columns.Add(field.Value.FinalPropertyName, Nullable.GetUnderlyingType(field.Value.Property.PropertyType) ?? field.Value.Property.PropertyType);
+            }
+
+            foreach (var item in items)
+            {
+                var row = dataTable.NewRow();
+                foreach (var field in fieldsSelectionManager.FieldsList)
+                {
+                    row[field.Value.FinalPropertyName] = field.Value.Property.GetValue(item) ?? DBNull.Value;
                 }
                 dataTable.Rows.Add(row);
             }
