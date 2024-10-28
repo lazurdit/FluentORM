@@ -89,7 +89,7 @@ namespace LazurdIT.FluentOrm.MsSql
             {
                 StringBuilder query =
                     new(
-                        $"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableNameWithPrefix}"
+                        $"SELECT {includeColumns} FROM {TableNameWithPrefix}"
                     );
                 var parameters = new List<SqlParameter>();
 
@@ -122,7 +122,7 @@ namespace LazurdIT.FluentOrm.MsSql
                             + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
                     );
 
-                if (pageNumber > 0 && recordsCount > 0)
+                if (pageNumber >= 0 && recordsCount > 0)
                     query.Append(
                         $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
                     );

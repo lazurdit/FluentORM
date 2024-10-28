@@ -1,34 +1,23 @@
-﻿using LazurdIT.FluentOrm.Tests.TestResources;
+﻿using LazurdIT.FluentOrm.Tests.TestResources.Repositories;
+using LazurdIT.FluentOrm.Tests.Utils.TestBase;
 using System.Data.SQLite;
 
-namespace LazurdIT.FluentOrm.Tests.Utils;
+namespace LazurdIT.FluentOrm.Tests.Unit.DBMS.SQLite.Base;
 
-internal static class SQLiteUtils
+public class SQLiteTestBase : ITestBase<SQLiteConnection, StudentSQLiteRepository>
 {
-    internal static List<StudentModel> DefaultStudentsList => new()
-    {
-        new ()
-        {
-            Name = "John Doe",
-            Age = 25
-        },
-        new ()
-        {
-            Name = "Jane Doe",
-            Age = 23
-        },
-        new()
-        {
-            Name = "Jack Doe",
-            Age = 21
-        }
-    };
+    public string NewConnectionString() => $"Data Source={Path.GetTempFileName()};Version=3;New=True;";
 
-    internal static void ToDoBeforeTest(string connectionString)
+    public SQLiteConnection NewConnection(string? connectionString) => new(connectionString ?? NewConnectionString());
+
+    public StudentSQLiteRepository NewStudentsRepository()
+    => new();
+
+    public void ToDoBefore(string? connectionString)
     {
         // Step 1: Check if the Students table exists and reset it if it does
         using SQLiteCommand checkTableCmd = new();
-        using SQLiteConnection connection = new(connectionString);
+        using SQLiteConnection connection = NewConnection(connectionString);
         connection.Open();
         checkTableCmd.Connection = connection;
         checkTableCmd.CommandText = @"
@@ -55,7 +44,7 @@ internal static class SQLiteUtils
             createTableCmd.CommandText = @"
                                 CREATE TABLE Students (
                                     StudentId INTEGER PRIMARY KEY AUTOINCREMENT,
-                                    StudentName TEXT NOT NULL,
+                                    StudentName TEXT NOT NULL UNIQUE,
                                     StudentAge INTEGER NULL
                                 );
                             ";

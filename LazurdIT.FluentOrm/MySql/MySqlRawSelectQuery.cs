@@ -96,9 +96,9 @@ namespace LazurdIT.FluentOrm.MySql
                             + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
                     );
 
-                if (pageNumber > 0 && recordsCount > 0)
+                if (pageNumber >= 0 && recordsCount > 0)
                     query.Append(
-                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
+                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} Limit {pageNumber * recordsCount}, {recordsCount}"
                     );
 
                 using var command = new MySqlCommand(query.ToString(), dbConnection);

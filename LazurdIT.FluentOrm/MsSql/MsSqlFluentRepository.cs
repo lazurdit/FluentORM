@@ -283,5 +283,13 @@ namespace LazurdIT.FluentOrm.MsSql
         {
             Connection = connection;
         }
+
+        public MsSqlFluentRepository<T> WithConnetion(SqlConnection? connection)
+        {
+            Connection = connection;
+            return this;
+        }
+
+        IFluentRepository<T> IFluentRepository<T>.WithConnetion(DbConnection? connection) => WithConnetion(connection as SqlConnection);
     }
 }

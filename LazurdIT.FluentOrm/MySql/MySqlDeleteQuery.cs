@@ -75,7 +75,7 @@ namespace LazurdIT.FluentOrm.MySql
 
             try
             {
-                var query = $"delete from {TableNameWithPrefix.ToLower()}";
+                var query = $"delete from {TableNameWithPrefix}";
                 var parameters = new List<MySqlParameter>();
 
                 if (ConditionsManager.WhereConditions.Count > 0)

@@ -27,6 +27,8 @@ namespace LazurdIT.FluentOrm.Common
         IAggregateSelectQuery<T, ResultType> Aggregate<ResultType>(DbConnection? connection = null)
             where ResultType : IFluentModel, new();
 
+        IFluentRepository<T> WithConnetion(DbConnection? connection);
+
         IFluentRepository<T> Build();
 
         IFluentRepository<T> BuildDefaultQueries();

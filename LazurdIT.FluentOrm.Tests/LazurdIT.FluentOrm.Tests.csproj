@@ -16,6 +16,16 @@
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="FluentAssertions.Json" Version="6.1.0" />
+		<PackageReference Include="FluentMigrator" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Extensions.MySql" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Extensions.Oracle" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Extensions.Postgres" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Extensions.SqlServer" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Runner.MySql" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Runner.Oracle" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Runner.Postgres" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Runner.SQLite" Version="6.2.0" />
+		<PackageReference Include="FluentMigrator.Runner.SqlServer" Version="6.2.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
 		<PackageReference Include="xunit" Version="2.4.2" />
 		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
@@ -31,6 +41,12 @@
 
 	<ItemGroup>
 	  <Folder Include="Function\SQLite\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Update="xunit.runner.json">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 
 </Project>

@@ -163,7 +163,7 @@ namespace LazurdIT.FluentOrm.Oracle
                             + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
                     );
 
-                if (pageNumber > 0 && recordsCount > 0)
+                if (pageNumber >= 0 && recordsCount > 0)
                     query.Append(
                         $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
                     );

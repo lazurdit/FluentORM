@@ -270,5 +270,13 @@ namespace LazurdIT.FluentOrm.Pgsql
         {
             Connection = connection;
         }
+
+        public PgsqlFluentRepository<T> WithConnetion(NpgsqlConnection? connection)
+        {
+            Connection = connection;
+            return this;
+        }
+
+        IFluentRepository<T> IFluentRepository<T>.WithConnetion(DbConnection? connection) => WithConnetion(connection as NpgsqlConnection);
     }
 }

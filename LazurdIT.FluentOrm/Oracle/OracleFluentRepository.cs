@@ -269,5 +269,13 @@ namespace LazurdIT.FluentOrm.Oracle
         {
             Connection = connection;
         }
+
+        public OracleFluentRepository<T> WithConnetion(OracleConnection? connection)
+        {
+            Connection = connection;
+            return this;
+        }
+
+        IFluentRepository<T> IFluentRepository<T>.WithConnetion(DbConnection? connection) => WithConnetion(connection as OracleConnection);
     }
 }

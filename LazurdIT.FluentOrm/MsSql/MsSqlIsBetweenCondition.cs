@@ -15,6 +15,6 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public override SqlParameter[]? GetSqlParameters(string expressionSymbol) => new SqlParameter[] { new($"{ParameterName}_1", Value), new($"{ParameterName}_2", Value2) };
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotBetween ? " is not" : "")} between {expressionSymbol}{ParameterName}_1 and {expressionSymbol}{ParameterName}_2)";
+        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotBetween ? " not" : "")} between {expressionSymbol}{ParameterName}_1 and {expressionSymbol}{ParameterName}_2)";
     }
 }

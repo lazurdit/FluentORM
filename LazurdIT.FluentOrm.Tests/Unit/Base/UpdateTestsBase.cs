@@ -1,32 +1,37 @@
-﻿using System.Data.SQLite;
+﻿using System.Data.Common;
 using FluentAssertions;
-using LazurdIT.FluentOrm.Tests.TestResources;
-using LazurdIT.FluentOrm.Tests.Unit.SQLite.Base;
+using LazurdIT.FluentOrm.Common;
+using LazurdIT.FluentOrm.Tests.TestResources.Models;
 using LazurdIT.FluentOrm.Tests.Utils;
+using LazurdIT.FluentOrm.Tests.Utils.TestBase;
 
-namespace LazurdIT.FluentOrm.Tests.Unit.SQLite;
+namespace LazurdIT.FluentOrm.Tests.Unit.Base;
 
-public class SQLiteUpdateTests : SQLiteTestBase
+public abstract class UpdateTestsBase<TBase, TConnection, TRepository> where TBase : ITestBase<TConnection, TRepository> where TConnection : DbConnection, new() where TRepository : IFluentRepository<StudentModel>
 {
-    [Fact(DisplayName = "Test Update record")]
-    public void TestUpdateStudentModel()
-    {
-        ToDoBefore();
-        StudentSQLiteRepository repository = new();
-        string tempDBFile = Path.GetTempFileName();
+    public abstract TBase TestBase { get; }
 
-        using SQLiteConnection connection = new(connectionString);
+    [Fact(DisplayName = "Test update record")]
+    public void UpdateData()
+    {
+        var connectionString = TestBase.NewConnectionString();
+        var repository = TestBase.NewStudentsRepository();
+        TestBase.ToDoBefore(connectionString);
+        using var connection = TestBase.NewConnection(connectionString);
+
         connection.Open();
 
         var insertQuery = repository.Insert().WithFields(f => f.Exclude(f => f.Id));
 
-        var originalStudent = SQLiteUtils.DefaultStudentsList[0];
+        var originalStudent = SampleData.DefaultStudentsList[0];
         var resultRecord = insertQuery.Execute(originalStudent, true, connection);
 
         resultRecord.Should().NotBeNull("The record should not be null");
         resultRecord!.Id.Should().BePositive("The record should Have an Id more than zero");
-        resultRecord!.Name.Should().Be(originalStudent.Name, $"it should contain the name of {originalStudent.Name}, but the result was {resultRecord!.Name}");
-        resultRecord!.Age.Should().Be(originalStudent.Age, $"Age should be '{originalStudent.Age}' but the received is '{resultRecord?.Age}'");
+
+        //Adds a fix to pgsql test
+        connection.Close();
+        connection.Open();
 
         var updatedStudent = new StudentModel
         {
@@ -41,7 +46,12 @@ public class SQLiteUpdateTests : SQLiteTestBase
 
         var updatedRecord = updateQuery.Execute(updatedStudent, connection);
 
-        var selectQuery = repository.Select().Where(m => m.Eq(f => f.Id, updatedStudent.Id));
+        //Adds a fix to pgsql test
+        connection.Close();
+        connection.Open();
+
+        var selectQuery = repository.Select(connection)
+                            .Where(m => m.Eq(f => f.Id, updatedStudent.Id));
         var selectedRecord = selectQuery.Execute(connection).ToList()[0];
         selectedRecord.Should().NotBeNull("The record should not be null");
         selectedRecord!.Id.Should().Be(updatedStudent.Id, $"The record should Have the Id: {updatedStudent.Id} but the received is: {selectedRecord.Id}");

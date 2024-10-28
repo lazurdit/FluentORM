@@ -8,6 +8,16 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 
 ## Release Notes 
+# 1.3.0
+Provide varios fixes and enhancements to the SDK, upgrade to this version is highly recommended.
+- Fix: Fixed an issue with the `WithConnection` method.
+- Fix: Fixed an issue with Between, NotBetween, Like, NotLike conditions.
+- Fix: Fixed an issue with DB types conversion.
+- Fix: Fixed an issue pagination.
+- Fix: Fixed an issue with table name in Oracle DB.
+- Add: Added `WithConnection` method to the IFluentRepository allow the user to specify the connection.
+- Enhancement: Added extra 54 test-cases to ensure more stability.
+
 # 1.2.0
 - Feature: Added SQLite support.
 
@@ -33,6 +43,5 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 For any questions, issues, or support related to `lazurd.FluentORM`, please contact Lazurd Computer Services LLC at:
 
-- Email: support@lazurdit.com
-- Phone: +962799036777
+- Email: support@lazurdit.com 
  

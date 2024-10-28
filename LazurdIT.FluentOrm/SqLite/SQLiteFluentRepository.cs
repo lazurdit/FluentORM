@@ -284,5 +284,13 @@ namespace LazurdIT.FluentOrm.SQLite
         {
             Connection = connection;
         }
+
+        public SQLiteFluentRepository<T> WithConnetion(SQLiteConnection? connection)
+        {
+            Connection = connection;
+            return this;
+        }
+
+        IFluentRepository<T> IFluentRepository<T>.WithConnetion(DbConnection? connection) => WithConnetion(connection as SQLiteConnection);
     }
 }

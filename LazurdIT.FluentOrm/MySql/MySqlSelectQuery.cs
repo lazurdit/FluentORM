@@ -89,7 +89,7 @@ namespace LazurdIT.FluentOrm.MySql
             {
                 StringBuilder query =
                     new(
-                        $"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableNameWithPrefix}"
+                        $"SELECT {includeColumns} FROM {TableNameWithPrefix}"
                     );
                 var parameters = new List<MySqlParameter>();
 
@@ -122,9 +122,9 @@ namespace LazurdIT.FluentOrm.MySql
                             + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
                     );
 
-                if (pageNumber > 0 && recordsCount > 0)
+                if (pageNumber >= 0 && recordsCount > 0)
                     query.Append(
-                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
+                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} Limit {pageNumber * recordsCount}, {recordsCount}"
                     );
 
                 using var command = new MySqlCommand(query.ToString(), dbConnection);

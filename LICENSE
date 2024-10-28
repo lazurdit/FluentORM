@@ -1,4 +1,4 @@
-MIT License
+MIT License (With Attribution Requirement)
 
 Copyright (c) 2024 Lazurd IT
 
@@ -14,10 +14,9 @@ copies or substantial portions of the Software.
 
 **Attribution Requirement**:  
 Any redistribution, use, or modification of the Software, whether in
-source or binary forms, must include a clear reference to the 
+source or binary forms, must include a clear reference to the
 original project repository:  
 [https://github.com/lazurdit/FluentOrm]
-
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

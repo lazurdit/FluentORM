@@ -266,5 +266,13 @@ namespace LazurdIT.FluentOrm.MySql
         {
             Connection = connection;
         }
+
+        public MySqlFluentRepository<T> WithConnetion(MySqlConnection? connection)
+        {
+            Connection = connection;
+            return this;
+        }
+
+        IFluentRepository<T> IFluentRepository<T>.WithConnetion(DbConnection? connection) => WithConnetion(connection as MySqlConnection);
     }
 }

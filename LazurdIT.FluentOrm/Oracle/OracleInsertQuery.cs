@@ -21,7 +21,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -108,10 +108,17 @@ namespace LazurdIT.FluentOrm.Oracle
                         new OracleParameter(
                             $"new_{field.Value.FinalPropertyName}",
                             type,
-                            300,
-                            ParameterDirection.ReturnValue
+                            10,
+                            ParameterDirection.Output
                         )
                     );
+                    if (type == OracleDbType.NVarchar2)
+                    {
+                        cmd.Parameters[$"new_{field.Value.FinalPropertyName}"].Size = 10;
+                        cmd.Parameters[$"new_{field.Value.FinalPropertyName}"].DbType = DbType.String;
+                    }
+
+                    cmd.Parameters[$"new_{field.Value.FinalPropertyName}"].Direction = ParameterDirection.Output;
                 }
             }
             var c = cmd.ExecuteScalar();

@@ -50,7 +50,7 @@ namespace LazurdIT.FluentOrm.Common
 
         public abstract T? ToDtoModel(TCommand cmd, string paramPrefix = "");
 
-        public T ToDtoModel(IDataReader reader)
+        public virtual T ToDtoModel(IDataReader reader)
         {
             var instance = new T();
             foreach ((_, FluentTypeInfo FluentTypeInfo) in typeCache)
@@ -60,23 +60,8 @@ namespace LazurdIT.FluentOrm.Common
                 if (reader[columnName] != DBNull.Value)
                 {
                     var value = reader[columnName];
-                    var propertyType = FluentTypeInfo.Property.PropertyType;
-
-                    // Handle DateTime to DateTimeOffset conversion, needed in some cases like Pgsql
-                    if (propertyType == typeof(DateTimeOffset) && value is DateTime dateTimeValue)
-                    {
-                        var dateTimeOffsetValue = new DateTimeOffset(dateTimeValue);
-                        FluentTypeInfo.Property.SetValue(instance, dateTimeOffsetValue);
-                    }
-                    else if (propertyType == typeof(DateTimeOffset?) && value is DateTime dateTimeValue2)
-                    {
-                        var dateTimeOffsetValue = new DateTimeOffset(dateTimeValue2);
-                        FluentTypeInfo.Property.SetValue(instance, dateTimeOffsetValue);
-                    }
-                    else
-                    {
-                        FluentTypeInfo.Property.SetValue(instance, value);
-                    }
+                    var val2 = DbTypeComverter.ReverseGetValue(value, FluentTypeInfo.Property.PropertyType);
+                    FluentTypeInfo.Property.SetValue(instance, val2);
                 }
             }
 

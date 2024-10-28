@@ -1,10 +1,10 @@
 # LazurdIT.FluentOrm
 
-**FluentOrm** is an easy-to-use object-relational mapping (ORM) framework that simplifies database operations with a readable and fluent interface. It allows developers to interact with their databases using simple, chainable methods.
+**FluentOrm** is an easy-to-use object-relational mapping (ORM) framework that simplifies database operations with a readable and fluent interface. It allows developers to interact with their databases using simple, chainable methods, With **FluentORM**, you can easily manage your database operations using a fluent interface. From simple CRUD operations to complex queries, it streamlines the process and improves efficiency in data management.
 
 ## License
 
-This project is licensed under the MIT License, with required attribution to the original repository: [FluentORM Repository](https://github.com/lazurdit/FluentOrm).
+This project is licensed under the MIT (With Attribution) License, with required attribution to the original repository: [FluentORM Repository](https://github.com/lazurdit/FluentOrm).
 
 ## Features
 
@@ -26,7 +26,6 @@ This project is licensed under the MIT License, with required attribution to the
    - [List Operation](#2-list-operation)
    - [Update Operation](#3-update-operation)
    - [Delete Operation](#4-delete-operation)
-5. [Conclusion](#conclusion)
 
 ---
 
@@ -50,7 +49,7 @@ To install **FluentORM**, use either the .NET CLI or NuGet Package Manager:
 Run the following command in your terminal to install the package:
 
 ```bash
-dotnet add package Lazurd.FluentORM --version 1.1.1
+dotnet add package Lazurd.FluentORM 
 ```
 
 ### 2. NuGet Package Manager
@@ -58,7 +57,7 @@ dotnet add package Lazurd.FluentORM --version 1.1.1
 Open the NuGet Package Manager Console and run the following command:
 
 ```bash
-Install-Package Lazurd.FluentORM -Version 1.1.1
+Install-Package Lazurd.FluentORM 
 ```
 
 ---
@@ -237,11 +236,3 @@ private static void DeleteStudent(string connectionString, int studentId)
 ```console
 Student with Id 2005 deleted.
 ```
-
----
-
-## Conclusion
-
-With **FluentORM**, you can easily manage your database operations using a fluent interface. From simple CRUD operations to complex queries, it streamlines the process and improves efficiency in data management.
-
----

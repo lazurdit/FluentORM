@@ -46,6 +46,16 @@ namespace LazurdIT.FluentOrm.Oracle
             if (targetType == null)
                 return result;
 
+            if (Nullable.GetUnderlyingType(targetType) != null)
+            {
+                if (Nullable.GetUnderlyingType(targetType) == typeof(long) && result.GetType() == typeof(decimal))
+                    if (long.TryParse($"{result}", out long longResult))
+                        return longResult; ;
+            }
+            if (targetType == typeof(long) && result.GetType() == typeof(decimal))
+                if (long.TryParse($"{result}", out long longResult))
+                    return longResult; ;
+
             if ((targetType == typeof(DateTimeOffset) || targetType == typeof(DateTimeOffset?)) && (result.GetType() == typeof(DateTimeOffset) || result.GetType() == typeof(DateTimeOffset?)))
                 return result;
 
@@ -74,9 +84,39 @@ namespace LazurdIT.FluentOrm.Oracle
             return result == null ? null : Convert.ChangeType(result, targetType!);
         }
 
+        public static bool IsNullValue(OracleDbType dbType, object value)
+        {
+            if (value == null)
+                return true;
+
+            return dbType switch
+            {
+                OracleDbType.Varchar2 or OracleDbType.NVarchar2 or OracleDbType.Char or OracleDbType.NChar or
+                OracleDbType.Clob or OracleDbType.NClob or OracleDbType.Long => value == DBNull.Value,
+                OracleDbType.Blob or OracleDbType.Raw or OracleDbType.BFile or OracleDbType.LongRaw => value == DBNull.Value,
+                OracleDbType.Date => value is OracleDate date && date.IsNull,
+                OracleDbType.TimeStamp => value is OracleTimeStamp timestamp && timestamp.IsNull,
+                OracleDbType.TimeStampLTZ => value is OracleTimeStampTZ timestampLTZ && timestampLTZ.IsNull,
+                OracleDbType.TimeStampTZ => value is OracleTimeStampTZ timestampTZ && timestampTZ.IsNull,
+                OracleDbType.IntervalDS => value is OracleIntervalDS intervalDS && intervalDS.IsNull,
+                OracleDbType.IntervalYM => value is OracleIntervalYM intervalYM && intervalYM.IsNull,
+                OracleDbType.Decimal => value is OracleDecimal dec && dec.IsNull,
+                OracleDbType.Boolean => value is OracleBoolean boolean && boolean.IsNull,
+                OracleDbType.RefCursor => false,
+                OracleDbType.XmlType or OracleDbType.Json or OracleDbType.ArrayAsJson or OracleDbType.ObjectAsJson => value == DBNull.Value,
+                OracleDbType.Ref => value == DBNull.Value,
+                OracleDbType.Vector or OracleDbType.Vector_Int8 or OracleDbType.Vector_Float32 or OracleDbType.Vector_Float64 => value == null || value == DBNull.Value,
+                OracleDbType.Object or OracleDbType.Array or OracleDbType.Double or OracleDbType.Single or
+                OracleDbType.Int16 or OracleDbType.Int32 or OracleDbType.Int64 or OracleDbType.Byte or
+                OracleDbType.BinaryDouble or OracleDbType.BinaryFloat => value == DBNull.Value,
+
+                _ => throw new ArgumentOutOfRangeException(nameof(dbType), $"Unsupported OracleDbType: {dbType}"),
+            };
+        }
+
         public static object? GetValue(OracleDbType dbType, object value)
         {
-            if (string.IsNullOrWhiteSpace(value.ToString()!))
+            if (string.IsNullOrWhiteSpace(value.ToString()!) || IsNullValue(dbType, value))
                 return null;
 
             return dbType switch

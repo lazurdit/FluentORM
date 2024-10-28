@@ -12,6 +12,6 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public override NpgsqlParameter[]? GetSqlParameters(string expressionSymbol) => new NpgsqlParameter[] { new($"{expressionSymbol}{ParameterName}_1", Value), new($"{expressionSymbol}{ParameterName}_2", Value2) };
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotBetween ? " is not" : "")} between {expressionSymbol}{ParameterName}_1 and {expressionSymbol}{ParameterName}_2)";
+        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotBetween ? " not" : "")} between {expressionSymbol}{ParameterName}_1 and {expressionSymbol}{ParameterName}_2)";
     }
 }

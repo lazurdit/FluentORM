@@ -19,7 +19,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -110,7 +110,7 @@ namespace LazurdIT.FluentOrm.MySql
                     UpdateManager.GetFinalExpressions(parameterName, "@")
                 );
 
-                StringBuilder updateQuery = new($@"update {TableNameWithPrefix.ToLower()} set {expressions}");
+                StringBuilder updateQuery = new($@"update {TableNameWithPrefix} set {expressions}");
 
                 var parameters = new List<MySqlParameter>();
 

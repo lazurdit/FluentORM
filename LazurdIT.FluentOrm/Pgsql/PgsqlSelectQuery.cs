@@ -21,7 +21,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -90,9 +90,9 @@ namespace LazurdIT.FluentOrm.Pgsql
             {
                 StringBuilder query =
                     new(
-                        $"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableNameWithPrefix}"
+                        $"SELECT {includeColumns} FROM {TableNameWithPrefix}"
                     );
-                var parameters = new List<SqlParameter>();
+                var parameters = new List<NpgsqlParameter>();
 
                 if (ConditionsManager.WhereConditions.Count > 0)
                 {
@@ -112,7 +112,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            (NpgsqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
                         );
                     }
                 }
@@ -123,9 +123,9 @@ namespace LazurdIT.FluentOrm.Pgsql
                             + string.Join(", ", OrderByManager.OrderByColumns.Select(o => o.Expression))
                     );
 
-                if (pageNumber > 0 && recordsCount > 0)
+                if (pageNumber >= 0 && recordsCount > 0)
                     query.Append(
-                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} OFFSET {pageNumber * recordsCount} ROWS FETCH NEXT {recordsCount} ROWS ONLY"
+                        $" {(OrderByManager.OrderByColumns?.Count > 0 ? "" : "order by (select null)")} Limit {recordsCount} OFFSET {pageNumber * recordsCount}"
                     );
 
                 using var command = new NpgsqlCommand(query.ToString(), dbConnection);
@@ -149,11 +149,23 @@ namespace LazurdIT.FluentOrm.Pgsql
             }
         }
 
-        public PgsqlSelectQuery<T> Where(Action<PgsqlConditionsManager<T>> fn) => Where(fn);
+        public PgsqlSelectQuery<T> Where(Action<PgsqlConditionsManager<T>> fn)
+        {
+            fn(ConditionsManager);
+            return this;
+        }
 
-        public PgsqlSelectQuery<T> OrderBy(Action<OrderByManager<T>> fn) => OrderBy(fn);
+        public PgsqlSelectQuery<T> OrderBy(Action<OrderByManager<T>> fn)
+        {
+            fn(OrderByManager);
+            return this;
+        }
 
-        public PgsqlSelectQuery<T> Returns(Action<PgsqlFieldsSelectionManager<T>> fn) => Returns(fn);
+        public PgsqlSelectQuery<T> Returns(Action<PgsqlFieldsSelectionManager<T>> fn)
+        {
+            fn(FieldsManager);
+            return this;
+        }
 
         IEnumerable<T> ISelectQuery<T>.Execute(
             DbConnection? connection,

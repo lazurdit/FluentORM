@@ -8,6 +8,6 @@ namespace LazurdIT.FluentOrm.MySql
 
         public bool IsNotLike { get; set; }
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotLike ? " is not " : "")} like {expressionSymbol}{ParameterName})";
+        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotLike ? " not " : "")} like {expressionSymbol}{ParameterName})";
     }
 }
