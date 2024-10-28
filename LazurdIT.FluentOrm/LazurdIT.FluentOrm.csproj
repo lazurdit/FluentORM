@@ -14,7 +14,7 @@
 		<Product>LazurdIT.FluentORM</Product>
 		<Copyright>2024</Copyright>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<PackageLicenseFile>license.txt</PackageLicenseFile>
+		<PackageLicenseFile>fluent_orm.license.txt</PackageLicenseFile>
 		<PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
 		<IncludeContentInPack>true</IncludeContentInPack>
 	</PropertyGroup>
@@ -44,8 +44,10 @@
 		<None Update="assets\README.md">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<None Update="fluent_orm.license.txt">
-		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		<None Update="fluent_orm.license.txt" >
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
 		</None>
 		<None Update="license.txt">
 			<PackagePath>\</PackagePath>
@@ -53,5 +55,6 @@
 			<Pack>True</Pack>
 		</None>
 		<None Include="assets\readme.md" Pack="true" PackagePath="\" />
+		<None Include="fluent_orm.license.txt" Pack="true" PackagePath="\" />
 	</ItemGroup>
 </Project>
