@@ -135,7 +135,7 @@ namespace LazurdIT.FluentOrm.Oracle
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (OracleParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<OracleParameter>()!
                         );
                     }
                 }
@@ -213,7 +213,7 @@ namespace LazurdIT.FluentOrm.Oracle
             Update((OracleConnection?)connection);
 
         bool IFluentRepository<T>.IsUsedByAnyOutRelation(
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         )
         {
@@ -222,7 +222,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         bool IFluentRepository<T>.IsUsedByRelation(
             IFluentRelation[] FluentRelations,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(
@@ -233,7 +233,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         bool IFluentRepository<T>.IsUsedByRelation(
             string FluentRelationName,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(
@@ -244,7 +244,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         bool IFluentRepository<T>.IsUsedByRelation(
             string[] FluentRelationNames,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(

@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
@@ -60,7 +59,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         public SQLiteConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IHavingConditionsManager<T> IAggregateSelectQuery<T, ResultType>.HavingConditionsManager =>
             HavingConditionsManager;
@@ -114,7 +113,7 @@ namespace LazurdIT.FluentOrm.SQLite
                             + string.Join(
                                 " AND ",
                                 ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                    w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -124,7 +123,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     )
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -141,7 +140,7 @@ namespace LazurdIT.FluentOrm.SQLite
                             + string.Join(
                                 " AND ",
                                 HavingConditionsManager.HavingConditions.Select(w =>
-                                    w.GetExpression(ExpressionSymbol)
+                                    w.SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -153,7 +152,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     )
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -250,7 +249,7 @@ namespace LazurdIT.FluentOrm.SQLite
         ) => OrderBy(fn);
 
         IAggregateSelectQuery<T, ResultType> IAggregateSelectQuery<T, ResultType>.Where(
-            Action<IConditionsManager<T>> fn
+            Action<IFluentConditionsManager<T>> fn
         ) => Where(fn);
     }
 }

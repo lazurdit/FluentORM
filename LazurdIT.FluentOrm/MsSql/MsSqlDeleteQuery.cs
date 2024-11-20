@@ -53,7 +53,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public SqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
         string ITableRelatedFluentQuery.TableName
         {
@@ -92,9 +92,7 @@ namespace LazurdIT.FluentOrm.MsSql
                         " WHERE "
                         + string.Join(
                             " AND ",
-                            ConditionsManager.WhereConditions.Select(w =>
-                                w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
-                            )
+                            ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression())
                         );
 
                     foreach (
@@ -102,7 +100,7 @@ namespace LazurdIT.FluentOrm.MsSql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                         condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!
                         );
                     }
                 }
@@ -130,6 +128,6 @@ namespace LazurdIT.FluentOrm.MsSql
         int IDeleteQuery<T>.Execute(DbConnection? connection, bool deleteAll) =>
             Execute((SqlConnection?)connection, deleteAll);
 
-        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

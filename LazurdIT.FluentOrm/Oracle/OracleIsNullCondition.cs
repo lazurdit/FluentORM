@@ -1,20 +1,20 @@
 ﻿using LazurdIT.FluentOrm.Common;
-using Oracle.ManagedDataAccess.Client;
 using System.Data.Common;
+using System.Data.SqlClient;
 
 namespace LazurdIT.FluentOrm.Oracle
 {
-    public class OracleIsNullCondition : Condition<bool>
+    public class OracleIsNullCondition : FluentSingleAttributeCondition<bool>
     {
         public override bool HasParameters => false;
 
-        public override string GetExpression(string expressionSymbol)
+        public override string GetExpression()
         {
             return $"({AttributeName} is {(Value ? "" : " not ")} null)";
         }
 
-        public OracleParameter[]? GetSqlParameters(string _) => null;
+        public static SqlParameter[]? GetSqlParameters() => null;
 
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => null;
+        public override DbParameter[]? GetDbParameters() => null;
     }
 }

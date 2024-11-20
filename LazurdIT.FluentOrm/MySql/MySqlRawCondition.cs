@@ -1,24 +1,18 @@
 ﻿using LazurdIT.FluentOrm.Common;
 using MySqlConnector;
-using System.Data.Common;
 
 namespace LazurdIT.FluentOrm.MySql
 {
-    public class MySqlRawCondition : Condition<string>
+    public class MySqlRawCondition : FluentRawCondition
     {
-        public override bool HasParameters => false;
-
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => null;
-
-        public override string GetExpression(string expressionSymbol) => $"{Value}";
     }
 
-    public class MySqlRawCondition<T> : ValuesCondition<T, string>, ICondition<T, string>, ISingleAttributeCondition
+    public class MySqlRawCondition<T> : FluentSingleAttributeCondition<T, string>
     {
         public override bool HasParameters => false;
 
-        public override MySqlParameter[]? GetDbParameters(string expressionSymbol) => null;
+        public override MySqlParameter[]? GetDbParameters() => null;
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {Value})";
+        public override string GetExpression() => $"({AttributeName} {Value})";
     }
 }

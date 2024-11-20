@@ -4,42 +4,46 @@ using System.Linq.Expressions;
 
 namespace LazurdIT.FluentOrm.Common
 {
-    public interface IConditionsManager<T> where T : IFluentModel, new()
+    public interface IFluentConditionsManager<T> where T : IFluentModel, new()
     {
-        List<ICondition> WhereConditions { get; }
+        List<IFluentCondition> WhereConditions { get; }
 
-        IConditionsManager<T> Between<TProperty>(Expression<Func<T, TProperty>> property, TProperty value1, TProperty value2);
+        IFluentConditionsManager<T> Between<TProperty>(Expression<Func<T, TProperty>> property, TProperty value1, TProperty value2);
 
-        IConditionsManager<T> Clone(IConditionsManager<T> sourceIConditionsManager);
+        IFluentConditionsManager<T> Clone(IFluentConditionsManager<T> sourceIFluentConditionsManager);
 
-        IConditionsManager<T> Custom(ISingleAttributeCondition condition);
+        IFluentConditionsManager<T> Custom(IFluentSingleAttributeCondition condition);
 
-        IConditionsManager<T> Eq<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> Or(Action<IFluentConditionsManager<T>> condition);
 
-        IConditionsManager<T> Gt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> And(Action<IFluentConditionsManager<T>> condition);
 
-        IConditionsManager<T> Gte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> Eq<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> In<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values);
+        IFluentConditionsManager<T> Gt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> IsNotNull<TProperty>(Expression<Func<T, TProperty>> property);
+        IFluentConditionsManager<T> Gte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> IsNull<TProperty>(Expression<Func<T, TProperty>> property);
+        IFluentConditionsManager<T> In<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values);
 
-        IConditionsManager<T> Like<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> IsNotNull<TProperty>(Expression<Func<T, TProperty>> property);
 
-        IConditionsManager<T> Lt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> IsNull<TProperty>(Expression<Func<T, TProperty>> property);
 
-        IConditionsManager<T> Lte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> Like<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> NotBetween<TProperty>(Expression<Func<T, TProperty>> property, TProperty values1, TProperty values2);
+        IFluentConditionsManager<T> Lt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> NotIn<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values);
+        IFluentConditionsManager<T> Lte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
 
-        IConditionsManager<T> NotLike<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+        IFluentConditionsManager<T> NotBetween<TProperty>(Expression<Func<T, TProperty>> property, TProperty values1, TProperty values2);
 
-        IConditionsManager<T> Raw(string whereCondition);
+        IFluentConditionsManager<T> NotIn<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values);
 
-        IConditionsManager<T> Raw<TProperty>(Expression<Func<T, TProperty>> property, string whereCondition);
+        IFluentConditionsManager<T> NotLike<TProperty>(Expression<Func<T, TProperty>> property, TProperty value);
+
+        IFluentConditionsManager<T> Raw(string whereCondition);
+
+        IFluentConditionsManager<T> Raw<TProperty>(Expression<Func<T, TProperty>> property, string whereCondition);
     }
 }

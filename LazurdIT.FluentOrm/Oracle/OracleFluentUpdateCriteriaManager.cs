@@ -1,4 +1,5 @@
 ﻿using Oracle.ManagedDataAccess.Client;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,7 +14,7 @@ namespace LazurdIT.FluentOrm.Common
 
         public IEnumerable<OracleParameter> GetSqlParameters(T? instance, string parameterName)
         {
-            return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new OracleParameter($"{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new OracleParameter($"{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
     }
 }

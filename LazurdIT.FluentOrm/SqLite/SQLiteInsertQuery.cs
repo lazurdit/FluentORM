@@ -1,11 +1,8 @@
 ﻿using LazurdIT.FluentOrm.Common;
-using LazurdIT.FluentOrm.MySql;
-using MySqlConnector;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;

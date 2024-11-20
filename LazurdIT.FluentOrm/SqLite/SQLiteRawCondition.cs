@@ -1,25 +1,18 @@
 ﻿using LazurdIT.FluentOrm.Common;
-using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 
 namespace LazurdIT.FluentOrm.SQLite
 {
-    public class SQLiteRawCondition : Condition<string>
+    public class SQLiteRawCondition : FluentRawCondition
     {
-        public override bool HasParameters => false;
-
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => null;
-
-        public override string GetExpression(string expressionSymbol) => $"{Value}";
     }
 
-    public class SQLiteRawCondition<T> : ValuesCondition<T, string>, ICondition<T, string>, ISingleAttributeCondition
+    public class SQLiteRawCondition<T> : FluentSingleAttributeCondition<T, string>
     {
         public override bool HasParameters => false;
 
-        public override SQLiteParameter[]? GetDbParameters(string expressionSymbol) => null;
+        public override SQLiteParameter[]? GetDbParameters() => null;
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {Value})";
+        public override string GetExpression() => $"({AttributeName} {Value})";
     }
 }

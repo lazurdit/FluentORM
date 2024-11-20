@@ -8,6 +8,6 @@ namespace LazurdIT.FluentOrm.Common
     {
         int Execute(DbConnection? connection = null, bool deleteAll = false);
 
-        IDeleteQuery<T> Where(Action<IConditionsManager<T>> fn);
+        IDeleteQuery<T> Where(Action<IFluentConditionsManager<T>> fn);
     }
 }

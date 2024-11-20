@@ -20,7 +20,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -56,7 +56,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public MySqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> ISelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -101,7 +101,7 @@ namespace LazurdIT.FluentOrm.MySql
                             + string.Join(
                                 " AND ",
                                 ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                    w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -111,7 +111,7 @@ namespace LazurdIT.FluentOrm.MySql
                     )
                     {
                         parameters.AddRange(
-                            (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -174,7 +174,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         ISelectQuery<T> ISelectQuery<T>.OrderBy(Action<OrderByManager<T>> fn) => OrderBy(fn);
 
-        ISelectQuery<T> ISelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        ISelectQuery<T> ISelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         ISelectQuery<T> ISelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) => Returns(fn);
     }

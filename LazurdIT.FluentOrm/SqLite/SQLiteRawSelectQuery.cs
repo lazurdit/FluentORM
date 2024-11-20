@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
@@ -41,7 +40,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         public SQLiteConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> IRawSelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -79,7 +78,7 @@ namespace LazurdIT.FluentOrm.SQLite
                 {
                     int i = 0;
                     query.Append(
-                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)))}"
+                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()))}"
                     );
 
                     foreach (
@@ -87,7 +86,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     )
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[])condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -146,7 +145,7 @@ namespace LazurdIT.FluentOrm.SQLite
         IRawSelectQuery<T> IRawSelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) =>
             Returns(fn);
 
-        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         IEnumerable<T> IRawSelectQuery<T>.Execute(
             DbConnection? connection,

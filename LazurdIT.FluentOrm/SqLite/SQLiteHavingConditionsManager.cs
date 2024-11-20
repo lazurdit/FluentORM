@@ -7,13 +7,13 @@ namespace LazurdIT.FluentOrm.SQLite
 {
     public class SQLiteHavingConditionsManager<T> : IHavingConditionsManager<T> where T : IFluentModel, new()
     {
-        public List<ICondition> HavingConditions { get; } = new();
+        public List<IFluentCondition> HavingConditions { get; } = new();
 
         public SQLiteHavingConditionsManager()
         {
         }
 
-        public SQLiteHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, SQLiteFluentAggregateTypeInfoOp, ICondition> opFunc)
+        public SQLiteHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, SQLiteFluentAggregateTypeInfoOp, IFluentCondition> opFunc)
         {
             var typeInfo = typeInfoFunc(property);
 

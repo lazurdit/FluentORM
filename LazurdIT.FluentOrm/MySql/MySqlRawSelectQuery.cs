@@ -39,7 +39,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public MySqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> IRawSelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -77,7 +77,7 @@ namespace LazurdIT.FluentOrm.MySql
                 {
                     int i = 0;
                     query.Append(
-                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)))}"
+                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()))}"
                     );
 
                     foreach (
@@ -85,7 +85,7 @@ namespace LazurdIT.FluentOrm.MySql
                     )
                     {
                         parameters.AddRange(
-                            (MySqlParameter[])condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -144,7 +144,7 @@ namespace LazurdIT.FluentOrm.MySql
         IRawSelectQuery<T> IRawSelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) =>
             Returns(fn);
 
-        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         IEnumerable<T> IRawSelectQuery<T>.Execute(
             DbConnection? connection,

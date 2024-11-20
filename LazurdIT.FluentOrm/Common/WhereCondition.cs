@@ -2,7 +2,7 @@
 
 namespace LazurdIT.FluentOrm.Common
 {
-    public class WhereCondition<T> : ISingleWhereCondition
+    public class WhereCondition<T> : IWhereCondition
     {
         public string? AttributeName { get; set; }
         public WhereConditions Condition { get; set; }

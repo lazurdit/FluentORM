@@ -26,14 +26,14 @@ namespace LazurdIT.FluentOrm.MsSql
             var parameters = new List<SqlParameter>();
             var result = typeCache.Where(t => t.Value.Attribute.IsPrimary == true);
 
-            return result.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return result.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public IEnumerable<SqlParameter> GetSqlParameters(T instance, string parameterName = "", string[]? fieldNamesList = null)
         {
             var parameters = new List<SqlParameter>();
             var result = fieldNamesList != null ? typeCache.Where(t => fieldNamesList.Contains(t.Value.FinalPropertyName)) : typeCache;
-            return result.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return result.Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override T? ToDtoModel(SqlCommand cmd, string paramPrefix = "") => throw new Exception("Method unsupported for MsSql");

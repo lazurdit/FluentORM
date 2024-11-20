@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
@@ -58,7 +57,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         FluentUpdateCriteriaManager<T> IUpdateQuery<T>.UpdateManager => this.UpdateManager;
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
         public SQLiteUpdateQuery(SQLiteConnection? connection = null)
         {
@@ -124,7 +123,8 @@ namespace LazurdIT.FluentOrm.SQLite
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                    .SetExpressionSymbol(ExpressionSymbol)
+                                        .GetExpression()
                                 )
                             )
                     );
@@ -132,7 +132,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -222,7 +222,8 @@ namespace LazurdIT.FluentOrm.SQLite
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                        .SetExpressionSymbol(ExpressionSymbol)
+                                        .GetExpression()
                                 )
                             )
                     );
@@ -230,7 +231,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -276,14 +277,14 @@ namespace LazurdIT.FluentOrm.SQLite
 
         int IUpdateQuery<T>.Execute(
             T record,
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(record, conditionsFn, (SQLiteConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
             T record,
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -298,13 +299,13 @@ namespace LazurdIT.FluentOrm.SQLite
             Execute((SQLiteConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(conditionsFn, (SQLiteConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -317,6 +318,6 @@ namespace LazurdIT.FluentOrm.SQLite
         IUpdateQuery<T> IUpdateQuery<T>.WithFields(Action<FluentUpdateCriteriaManager<T>> fn) =>
             WithFields(fn);
 
-        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

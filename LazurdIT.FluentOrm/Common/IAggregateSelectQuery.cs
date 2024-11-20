@@ -23,6 +23,6 @@ namespace LazurdIT.FluentOrm.Common
 
         IAggregateSelectQuery<T, ResultType> OrderBy(Action<AggregateOrderByManager<T>> fn);
 
-        IAggregateSelectQuery<T, ResultType> Where(Action<IConditionsManager<T>> fn);
+        IAggregateSelectQuery<T, ResultType> Where(Action<IFluentConditionsManager<T>> fn);
     }
 }

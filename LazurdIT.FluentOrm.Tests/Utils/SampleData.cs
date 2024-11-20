@@ -20,5 +20,7 @@ internal static class SampleData
         new(){Name = "Jaxson Doe",Age = 3},
         new(){Name = "Jaxon Dark",Age = 1},
         new(){Name = "Jaxson Dark",Age = 0},
+        new(){Name = "Jaxon Adams",Age = 0},
+        new(){Name = "Jaxson Adams",Age = 0},
     };
 }

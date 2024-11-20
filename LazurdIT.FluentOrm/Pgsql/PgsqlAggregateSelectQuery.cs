@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
@@ -60,7 +59,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public NpgsqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IHavingConditionsManager<T> IAggregateSelectQuery<T, ResultType>.HavingConditionsManager =>
             HavingConditionsManager;
@@ -104,7 +103,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     new(
                         $"SELECT {(recordsCount > 0 && pageNumber <= 0 ? $"TOP {recordsCount}" : "")} {includeColumns} FROM {TableNameWithPrefix}"
                     );
-                var parameters = new List<SqlParameter>();
+                var parameters = new List<NpgsqlParameter>();
 
                 if (ConditionsManager.WhereConditions.Count > 0)
                 {
@@ -114,7 +113,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                             + string.Join(
                                 " AND ",
                                 ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                    w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -124,7 +123,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<NpgsqlParameter>()!
                         );
                     }
                 }
@@ -141,7 +140,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                             + string.Join(
                                 " AND ",
                                 HavingConditionsManager.HavingConditions.Select(w =>
-                                    w.GetExpression(ExpressionSymbol)
+                                    w.SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -153,7 +152,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<NpgsqlParameter>()!
                         );
                     }
                 }
@@ -246,7 +245,7 @@ namespace LazurdIT.FluentOrm.Pgsql
         ) => OrderBy(fn);
 
         IAggregateSelectQuery<T, ResultType> IAggregateSelectQuery<T, ResultType>.Where(
-            Action<IConditionsManager<T>> fn
+            Action<IFluentConditionsManager<T>> fn
         ) => Where(fn);
 
         IAggregateSelectQuery<T, ResultType> IAggregateSelectQuery<T, ResultType>.Having(

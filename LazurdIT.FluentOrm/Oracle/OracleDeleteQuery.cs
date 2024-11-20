@@ -17,7 +17,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -53,7 +53,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public OracleConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OracleDeleteQuery{T}"/> class.
@@ -91,7 +91,7 @@ namespace LazurdIT.FluentOrm.Oracle
                         + string.Join(
                             " AND ",
                             ConditionsManager.WhereConditions.Select(w =>
-                                w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                             )
                         );
 
@@ -100,7 +100,7 @@ namespace LazurdIT.FluentOrm.Oracle
                     )
                     {
                         parameters.AddRange(
-                            (OracleParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<OracleParameter>()!
                         );
                     }
                 }
@@ -128,6 +128,6 @@ namespace LazurdIT.FluentOrm.Oracle
         int IDeleteQuery<T>.Execute(DbConnection? connection, bool deleteAll) =>
             Execute((OracleConnection?)connection, deleteAll);
 
-        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

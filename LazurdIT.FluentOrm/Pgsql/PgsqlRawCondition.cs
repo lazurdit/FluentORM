@@ -1,24 +1,18 @@
 ﻿using LazurdIT.FluentOrm.Common;
 using Npgsql;
-using System.Data.Common;
 
 namespace LazurdIT.FluentOrm.Pgsql
 {
-    public class PgsqlRawCondition : Condition<string>
+    public class PgsqlRawCondition : FluentRawCondition
     {
-        public override bool HasParameters => false;
-
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => null;
-
-        public override string GetExpression(string expressionSymbol) => $"{Value}";
     }
 
-    public class PgsqlRawCondition<T> : ValuesCondition<T, string>, ICondition<T, string>, ISingleAttributeCondition
+    public class PgsqlRawCondition<T> : FluentSingleAttributeCondition<T, string>
     {
         public override bool HasParameters => false;
 
-        public override NpgsqlParameter[]? GetDbParameters(string expressionSymbol) => null;
+        public override NpgsqlParameter[]? GetDbParameters() => null;
 
-        public override string GetExpression(string symb) => $"({AttributeName} {Value})";
+        public override string GetExpression() => $"({AttributeName} {Value})";
     }
 }

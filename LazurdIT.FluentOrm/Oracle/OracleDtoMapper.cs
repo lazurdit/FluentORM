@@ -26,14 +26,14 @@ namespace LazurdIT.FluentOrm.Oracle
             var parameters = new List<OracleParameter>();
             var result = typeCache.Where(t => t.Value.Attribute.IsPrimary == true);
 
-            return result.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return result.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public IEnumerable<OracleParameter> GetSqlParameters(T instance, string parameterName = "", string[]? fieldNamesList = null)
         {
             var parameters = new List<OracleParameter>();
             var result = fieldNamesList != null ? typeCache.Where(t => fieldNamesList.Contains(t.Value.FinalPropertyName)) : typeCache;
-            return result.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return result.Select(t => new OracleParameter($":{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? DBNull.Value));
         }
 
         public override T? ToDtoModel(OracleCommand cmd, string paramPrefix = "")

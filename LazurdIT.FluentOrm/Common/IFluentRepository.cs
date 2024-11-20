@@ -38,25 +38,25 @@ namespace LazurdIT.FluentOrm.Common
         IInsertQuery<T> Insert(DbConnection? connection = null);
 
         bool IsUsedByAnyOutRelation(
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection = null
         );
 
         bool IsUsedByRelation(
             IFluentRelation[] FluentRelations,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection = null
         );
 
         bool IsUsedByRelation(
             string FluentRelationName,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection = null
         );
 
         bool IsUsedByRelation(
             string[] FluentRelationNames,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection = null
         );
 

@@ -4,7 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 
@@ -57,7 +56,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public NpgsqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> ISelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -102,7 +101,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                             + string.Join(
                                 " AND ",
                                 ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                    w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -112,7 +111,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     )
                     {
                         parameters.AddRange(
-                            (NpgsqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<NpgsqlParameter>()!
                         );
                     }
                 }
@@ -177,6 +176,6 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         ISelectQuery<T> ISelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) => Returns(fn);
 
-        ISelectQuery<T> ISelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        ISelectQuery<T> ISelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

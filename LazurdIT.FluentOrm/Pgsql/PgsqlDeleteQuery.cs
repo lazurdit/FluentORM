@@ -18,7 +18,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public PgsqlConditionsManager<T> ConditionsManager { get; } = new();
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
         public NpgsqlConnection? Connection { get; set; }
 
         IDbConnection? IFluentQuery.Connection
@@ -32,7 +32,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         public int Execute(NpgsqlConnection? connection = null, bool deleteAll = false)
         {
@@ -61,7 +61,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                         + string.Join(
                             " AND ",
                             ConditionsManager.WhereConditions.Select(w =>
-                                w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                             )
                         );
 
@@ -70,7 +70,7 @@ namespace LazurdIT.FluentOrm.Pgsql
                     )
                     {
                         parameters.AddRange(
-                            (NpgsqlParameter[])condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<NpgsqlParameter>()!
                         );
                     }
                 }
@@ -99,7 +99,7 @@ namespace LazurdIT.FluentOrm.Pgsql
             return this;
         }
 
-        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IDeleteQuery<T> IDeleteQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         IFluentQuery IFluentQuery.WithConnection(IDbConnection? connection)
         {

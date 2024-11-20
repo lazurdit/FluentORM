@@ -21,7 +21,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public MySqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IHavingConditionsManager<T> IAggregateSelectQuery<T, ResultType>.HavingConditionsManager =>
             HavingConditionsManager;
@@ -33,7 +33,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -113,7 +113,7 @@ namespace LazurdIT.FluentOrm.MySql
                             + string.Join(
                                 " AND ",
                                 ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
+                                    w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -123,7 +123,7 @@ namespace LazurdIT.FluentOrm.MySql
                     )
                     {
                         parameters.AddRange(
-                            (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -140,7 +140,7 @@ namespace LazurdIT.FluentOrm.MySql
                             + string.Join(
                                 " AND ",
                                 HavingConditionsManager.HavingConditions.Select(w =>
-                                    w.GetExpression(ExpressionSymbol)
+                                    w.SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -152,7 +152,7 @@ namespace LazurdIT.FluentOrm.MySql
                     )
                     {
                         parameters.AddRange(
-                            (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -249,7 +249,7 @@ namespace LazurdIT.FluentOrm.MySql
         ) => OrderBy(fn);
 
         IAggregateSelectQuery<T, ResultType> IAggregateSelectQuery<T, ResultType>.Where(
-            Action<IConditionsManager<T>> fn
+            Action<IFluentConditionsManager<T>> fn
         ) => Where(fn);
     }
 }

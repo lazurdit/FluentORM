@@ -56,7 +56,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public SqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> ISelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -96,13 +96,12 @@ namespace LazurdIT.FluentOrm.MsSql
                 if (ConditionsManager.WhereConditions.Count > 0)
                 {
                     int i = 0;
+
                     query.Append(
                         " WHERE "
                             + string.Join(
                                 " AND ",
-                                ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
-                                )
+                                ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression())
                             )
                     );
 
@@ -110,9 +109,7 @@ namespace LazurdIT.FluentOrm.MsSql
                         var condition in ConditionsManager.WhereConditions.Where(w => w.HasParameters)
                     )
                     {
-                        parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
-                        );
+                        parameters.AddRange(condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!);
                     }
                 }
 
@@ -174,7 +171,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         ISelectQuery<T> ISelectQuery<T>.OrderBy(Action<OrderByManager<T>> fn) => OrderBy(fn);
 
-        ISelectQuery<T> ISelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        ISelectQuery<T> ISelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         ISelectQuery<T> ISelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) => Returns(fn);
     }

@@ -1,24 +1,18 @@
 ﻿using LazurdIT.FluentOrm.Common;
 using Oracle.ManagedDataAccess.Client;
-using System.Data.Common;
 
 namespace LazurdIT.FluentOrm.Oracle
 {
-    public class OracleRawCondition : Condition<string>
+    public class OracleRawCondition : FluentRawCondition
     {
-        public override bool HasParameters => false;
-
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => null;
-
-        public override string GetExpression(string expressionSymbol) => $"{Value}";
     }
 
-    public class OracleRawCondition<T> : ValuesCondition<T, string>, ICondition<T, string>, ISingleAttributeCondition
+    public class OracleRawCondition<T> : FluentSingleAttributeCondition<T, string>
     {
         public override bool HasParameters => false;
 
-        public override OracleParameter[]? GetDbParameters(string expressionSymbol) => null;
+        public override OracleParameter[]? GetDbParameters() => null;
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {Value})";
+        public override string GetExpression() => $"({AttributeName} {Value})";
     }
 }

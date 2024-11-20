@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LazurdIT.FluentOrm.Pgsql
 {
-    public abstract class PgsqlMultiValueCondition<T, TProperty> : IMultiValueCondition<T, TProperty>, ISingleAttributeCondition
+    public abstract class PgsqlMultiValueCondition<T, TProperty> : IMultiValueSingleAttributeCondition<T, TProperty>
     {
         public string AttributeName { get; set; } = string.Empty;
 
@@ -13,21 +13,33 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public TProperty[]? Values { get; set; }
 
-        public NpgsqlParameter[]? GetSqlParameters(string expressionSymbol)
+        public NpgsqlParameter[]? GetSqlParameters()
         {
-            return Values?.Select((value, index) => new NpgsqlParameter($"{expressionSymbol}{ParameterName}_{index}", value)).ToArray();
+            return Values?.Select((value, index) => new NpgsqlParameter($"{ExpressionSymbol}{ParameterName}_{index}", value)).ToArray();
         }
 
-        public ISingleAttributeCondition SetParameterName(string parameterName)
+        public abstract bool HasParameters { get; }
+
+        public abstract string GetExpression();
+
+        public DbParameter[]? GetDbParameters() => GetSqlParameters();
+
+        public string ExpressionSymbol { get; set; } = string.Empty;
+
+        public PgsqlMultiValueCondition<T, TProperty> SetParameterName(string parameterName)
         {
             ParameterName = parameterName;
             return this;
         }
 
-        public abstract bool HasParameters { get; }
+        IFluentCondition IFluentCondition.SetParameterName(string parameterName) => SetParameterName(parameterName);
 
-        public abstract string GetExpression(string expressionSymbol);
+        public PgsqlMultiValueCondition<T, TProperty> SetExpressionSymbol(string expressionSymbol)
+        {
+            ExpressionSymbol = expressionSymbol;
+            return this;
+        }
 
-        public DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+        IFluentCondition IFluentCondition.SetExpressionSymbol(string parameterName) => SetExpressionSymbol(parameterName);
     }
 }

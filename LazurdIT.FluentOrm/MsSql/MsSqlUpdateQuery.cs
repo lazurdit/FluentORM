@@ -19,7 +19,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -57,7 +57,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         FluentUpdateCriteriaManager<T> IUpdateQuery<T>.UpdateManager => this.UpdateManager;
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
         public MsSqlUpdateQuery(SqlConnection? connection = null)
         {
@@ -123,7 +123,7 @@ namespace LazurdIT.FluentOrm.MsSql
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                        .SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -131,7 +131,7 @@ namespace LazurdIT.FluentOrm.MsSql
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!
                         );
                     }
                 }
@@ -221,7 +221,7 @@ namespace LazurdIT.FluentOrm.MsSql
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                        .SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -229,7 +229,7 @@ namespace LazurdIT.FluentOrm.MsSql
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!
                         );
                     }
                 }
@@ -275,14 +275,14 @@ namespace LazurdIT.FluentOrm.MsSql
 
         int IUpdateQuery<T>.Execute(
             T record,
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(record, conditionsFn, (SqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
             T record,
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -297,13 +297,13 @@ namespace LazurdIT.FluentOrm.MsSql
             Execute((SqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(conditionsFn, (SqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -316,6 +316,6 @@ namespace LazurdIT.FluentOrm.MsSql
         IUpdateQuery<T> IUpdateQuery<T>.WithFields(Action<FluentUpdateCriteriaManager<T>> fn) =>
             WithFields(fn);
 
-        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

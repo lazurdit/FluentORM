@@ -8,7 +8,7 @@ namespace LazurdIT.FluentOrm.Common
     {
         public IEnumerable<SqlParameter> GetSqlParameters(T? instance, string parameterName)
         {
-            return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance)));
+            return Criterias.Where(t => t.Value?.Details?.HasParameter ?? false).Select(t => new SqlParameter($"@{parameterName}{t.Value.FinalPropertyName}", t.Value.Property.GetValue(instance) ?? System.DBNull.Value));
         }
     }
 }

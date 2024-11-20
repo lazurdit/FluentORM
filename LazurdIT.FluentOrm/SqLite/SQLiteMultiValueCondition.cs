@@ -1,12 +1,11 @@
 ﻿using LazurdIT.FluentOrm.Common;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 
 namespace LazurdIT.FluentOrm.SQLite
 {
-    public abstract class SQLiteMultiValueCondition<T, TProperty> : IMultiValueCondition<T, TProperty>, ISingleAttributeCondition
+    public abstract class SQLiteMultiValueCondition<T, TProperty> : IMultiValueSingleAttributeCondition<T, TProperty>
     {
         public string AttributeName { get; set; } = string.Empty;
 
@@ -14,21 +13,33 @@ namespace LazurdIT.FluentOrm.SQLite
 
         public TProperty[]? Values { get; set; }
 
-        public SQLiteParameter[]? GetSqlParameters(string expressionSymbol)
+        public SQLiteParameter[]? GetSqlParameters()
         {
-            return Values?.Select((value, index) => new SQLiteParameter($"{expressionSymbol}{ParameterName}_{index}", value)).ToArray();
+            return Values?.Select((value, index) => new SQLiteParameter($"{ExpressionSymbol}{ParameterName}_{index}", value)).ToArray();
         }
 
-        public ISingleAttributeCondition SetParameterName(string parameterName)
+        public abstract bool HasParameters { get; }
+
+        public abstract string GetExpression();
+
+        public DbParameter[]? GetDbParameters() => GetSqlParameters();
+
+        public string ExpressionSymbol { get; set; } = string.Empty;
+
+        public SQLiteMultiValueCondition<T, TProperty> SetParameterName(string parameterName)
         {
             ParameterName = parameterName;
             return this;
         }
 
-        public abstract bool HasParameters { get; }
+        IFluentCondition IFluentCondition.SetParameterName(string parameterName) => SetParameterName(parameterName);
 
-        public abstract string GetExpression(string expressionSymbol);
+        public SQLiteMultiValueCondition<T, TProperty> SetExpressionSymbol(string expressionSymbol)
+        {
+            ExpressionSymbol = expressionSymbol;
+            return this;
+        }
 
-        public DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+        IFluentCondition IFluentCondition.SetExpressionSymbol(string parameterName) => SetExpressionSymbol(parameterName);
     }
 }

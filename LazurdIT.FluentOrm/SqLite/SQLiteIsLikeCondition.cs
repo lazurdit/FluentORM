@@ -1,13 +1,11 @@
-﻿using LazurdIT.FluentOrm.Common;
-
-namespace LazurdIT.FluentOrm.SQLite
+﻿namespace LazurdIT.FluentOrm.SQLite
 {
-    public class SQLiteIsLikeCondition<T, TProperty> : SQLiteValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
+    public class SQLiteIsLikeCondition<T, TProperty> : SQLiteValuesCondition<T, TProperty>
     {
         public override bool HasParameters => true;
 
         public bool IsNotLike { get; set; }
 
-        public override string GetExpression(string expressionSymbol) => $"({AttributeName} {(IsNotLike ? " not " : "")} like {expressionSymbol}{ParameterName})";
+        public override string GetExpression() => $"({AttributeName} {(IsNotLike ? " not " : "")} like {ExpressionSymbol}{ParameterName})";
     }
 }

@@ -4,17 +4,14 @@ using System.Data.SqlClient;
 
 namespace LazurdIT.FluentOrm.MsSql
 {
-    public class MsSqlIsNullCondition : Condition<bool>
+    public class MsSqlIsNullCondition : FluentSingleAttributeCondition<bool>
     {
         public override bool HasParameters => false;
 
-        public override string GetExpression(string expressionSymbol)
-        {
-            return $"({AttributeName} is {(Value ? "" : " not ")} null)";
-        }
+        public override string GetExpression() => $"({AttributeName} is {(Value ? "" : " not ")} null)";
 
-        public SqlParameter[]? GetSqlParameters(string _) => null;
+        public static SqlParameter[]? GetSqlParameters() => null;
 
-        public override DbParameter[]? GetDbParameters(string _) => null;
+        public override DbParameter[]? GetDbParameters() => null;
     }
 }

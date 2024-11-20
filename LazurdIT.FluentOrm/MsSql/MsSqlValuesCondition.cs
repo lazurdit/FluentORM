@@ -4,11 +4,11 @@ using System.Data.SqlClient;
 
 namespace LazurdIT.FluentOrm.MsSql
 {
-    public abstract class MsSqlValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
+    public abstract class MsSqlValuesCondition<T, TProperty> : FluentSingleAttributeCondition<T, TProperty>
     {
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+        public override DbParameter[]? GetDbParameters() => GetSqlParameters();
 
-        public virtual SqlParameter[]? GetSqlParameters(string expressionSymbol)
+        public virtual SqlParameter[]? GetSqlParameters()
         {
             return new[] { new SqlParameter(ParameterName, Value) };
         }

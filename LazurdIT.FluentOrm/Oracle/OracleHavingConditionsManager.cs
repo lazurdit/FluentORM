@@ -7,13 +7,13 @@ namespace LazurdIT.FluentOrm.Oracle
 {
     public class OracleHavingConditionsManager<T> : IHavingConditionsManager<T> where T : IFluentModel, new()
     {
-        public List<ICondition> HavingConditions { get; } = new();
+        public List<IFluentCondition> HavingConditions { get; } = new();
 
         public OracleHavingConditionsManager()
         {
         }
 
-        public OracleHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, OracleFluentAggregateTypeInfoOp, ICondition> opFunc)
+        public OracleHavingConditionsManager<T> HavingAggregate<TProperty>(Expression<Func<T, TProperty>> property, Func<Expression<Func<T, TProperty>>, FluentAggregateTypeInfo> typeInfoFunc, Func<Expression<Func<T, TProperty>>, OracleFluentAggregateTypeInfoOp, IFluentCondition> opFunc)
         {
             var typeInfo = typeInfoFunc(property);
 

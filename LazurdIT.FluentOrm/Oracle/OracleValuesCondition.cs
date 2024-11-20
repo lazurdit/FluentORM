@@ -4,11 +4,11 @@ using System.Data.Common;
 
 namespace LazurdIT.FluentOrm.Oracle
 {
-    public abstract class OracleValuesCondition<T, TProperty> : ValuesCondition<T, TProperty>, ICondition<T, TProperty>, ISingleAttributeCondition
+    public abstract class OracleValuesCondition<T, TProperty> : FluentSingleAttributeCondition<T, TProperty>
     {
-        public override DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+        public override DbParameter[]? GetDbParameters() => GetSqlParameters();
 
-        public virtual OracleParameter[]? GetSqlParameters(string _)
+        public virtual OracleParameter[]? GetSqlParameters()
         {
             return new[] { new OracleParameter($"{ParameterName}", Value) };
         }

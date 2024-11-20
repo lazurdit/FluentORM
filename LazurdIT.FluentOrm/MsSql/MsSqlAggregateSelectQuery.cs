@@ -23,7 +23,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public string TableNameWithPrefix => $"{TablePrefix}{TableName}";
 
-        public string? TablePrefix { get; set; } 
+        public string? TablePrefix { get; set; }
 
         ITableRelatedFluentQuery ITableRelatedFluentQuery.WithPrefix(string tablePrefix)
         {
@@ -59,7 +59,7 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public SqlConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IHavingConditionsManager<T> IAggregateSelectQuery<T, ResultType>.HavingConditionsManager =>
             HavingConditionsManager;
@@ -112,9 +112,7 @@ namespace LazurdIT.FluentOrm.MsSql
                         " WHERE "
                             + string.Join(
                                 " AND ",
-                                ConditionsManager.WhereConditions.Select(w =>
-                                    w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)
-                                )
+                                ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression())
                             )
                     );
 
@@ -123,7 +121,7 @@ namespace LazurdIT.FluentOrm.MsSql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!
                         );
                     }
                 }
@@ -139,9 +137,7 @@ namespace LazurdIT.FluentOrm.MsSql
                         " HAVING "
                             + string.Join(
                                 " AND ",
-                                HavingConditionsManager.HavingConditions.Select(w =>
-                                    w.GetExpression(ExpressionSymbol)
-                                )
+                                HavingConditionsManager.HavingConditions.Select(w => w.SetExpressionSymbol(ExpressionSymbol).GetExpression())
                             )
                     );
 
@@ -152,7 +148,7 @@ namespace LazurdIT.FluentOrm.MsSql
                     )
                     {
                         parameters.AddRange(
-                            (SqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SqlParameter>()!
                         );
                     }
                 }
@@ -249,7 +245,7 @@ namespace LazurdIT.FluentOrm.MsSql
         ) => OrderBy(fn);
 
         IAggregateSelectQuery<T, ResultType> IAggregateSelectQuery<T, ResultType>.Where(
-            Action<IConditionsManager<T>> fn
+            Action<IFluentConditionsManager<T>> fn
         ) => Where(fn);
     }
 }

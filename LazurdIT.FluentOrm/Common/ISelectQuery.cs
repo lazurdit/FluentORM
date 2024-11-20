@@ -20,6 +20,6 @@ namespace LazurdIT.FluentOrm.Common
 
         ISelectQuery<T> Returns(Action<IFieldsSelectionManager<T>> fn);
 
-        ISelectQuery<T> Where(Action<IConditionsManager<T>> fn);
+        ISelectQuery<T> Where(Action<IFluentConditionsManager<T>> fn);
     }
 }

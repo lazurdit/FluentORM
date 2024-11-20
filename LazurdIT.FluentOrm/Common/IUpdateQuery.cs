@@ -12,14 +12,14 @@ namespace LazurdIT.FluentOrm.Common
 
         int Execute(
             T record,
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection = null,
             bool ignoreEmptyConditions = false
         );
 
         int Execute(
             T record,
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection = null,
             bool ignoreEmptyConditions = false
         );
@@ -27,19 +27,19 @@ namespace LazurdIT.FluentOrm.Common
         int Execute(DbConnection? connection = null, bool ignoreEmptyConditions = false);
 
         int Execute(
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection = null,
             bool ignoreEmptyConditions = false
         );
 
         int Execute(
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection = null,
             bool ignoreEmptyConditions = false
         );
 
         IUpdateQuery<T> WithFields(Action<FluentUpdateCriteriaManager<T>> fn);
 
-        IUpdateQuery<T> Where(Action<IConditionsManager<T>> fn);
+        IUpdateQuery<T> Where(Action<IFluentConditionsManager<T>> fn);
     }
 }

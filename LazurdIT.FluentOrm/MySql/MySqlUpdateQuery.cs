@@ -57,7 +57,7 @@ namespace LazurdIT.FluentOrm.MySql
 
         FluentUpdateCriteriaManager<T> IUpdateQuery<T>.UpdateManager => this.UpdateManager;
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => this.ConditionsManager;
 
         public MySqlUpdateQuery(MySqlConnection? connection = null)
         {
@@ -123,7 +123,7 @@ namespace LazurdIT.FluentOrm.MySql
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                        .SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -131,7 +131,7 @@ namespace LazurdIT.FluentOrm.MySql
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -223,7 +223,7 @@ namespace LazurdIT.FluentOrm.MySql
                                 " AND ",
                                 manager.WhereConditions.Select(w =>
                                     w.SetParameterName($"Wh_param_{++i}")
-                                        .GetExpression(ExpressionSymbol)
+                                        .SetExpressionSymbol(ExpressionSymbol).GetExpression()
                                 )
                             )
                     );
@@ -231,7 +231,7 @@ namespace LazurdIT.FluentOrm.MySql
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (MySqlParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<MySqlParameter>()!
                         );
                     }
                 }
@@ -277,14 +277,14 @@ namespace LazurdIT.FluentOrm.MySql
 
         int IUpdateQuery<T>.Execute(
             T record,
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(record, conditionsFn, (MySqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
             T record,
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -299,13 +299,13 @@ namespace LazurdIT.FluentOrm.MySql
             Execute((MySqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            Action<IConditionsManager<T>> conditionsFn,
+            Action<IFluentConditionsManager<T>> conditionsFn,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) => Execute(conditionsFn, (MySqlConnection?)connection, ignoreEmptyConditions);
 
         int IUpdateQuery<T>.Execute(
-            IConditionsManager<T> manager,
+            IFluentConditionsManager<T> manager,
             DbConnection? connection,
             bool ignoreEmptyConditions
         ) =>
@@ -318,6 +318,6 @@ namespace LazurdIT.FluentOrm.MySql
         IUpdateQuery<T> IUpdateQuery<T>.WithFields(Action<FluentUpdateCriteriaManager<T>> fn) =>
             WithFields(fn);
 
-        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IUpdateQuery<T> IUpdateQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
     }
 }

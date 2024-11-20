@@ -96,6 +96,84 @@ public abstract class SelectTestsBase<TBase, TConnection, TRepository> where TBa
         connection.Close();
     }
 
+    [Fact(DisplayName = "Test select records with or conditions")]
+    public void TestSelectStudentsWithOrConditions()
+    {
+        var connectionString = TestBase.NewConnectionString();
+        var repository = TestBase.NewStudentsRepository();
+        TestBase.ToDoBefore(connectionString);
+
+        using var connection = TestBase.NewConnection(connectionString);
+        connection.Open();
+
+        FillStudentList(TestBase, connection);
+        var countExpected = SampleData.DefaultStudentsList.Count(m => m.Name.Contains("Doe") || m.Name.Contains("Dark"));
+        var selectQuery = repository.Select().Where(m => m.Or(mg => mg.Like(f => f.Name, "%Doe%")
+                                                                    .Like(f => f.Name, "%Dark%"))
+                                                    );
+
+        //Adds a fix to pgsql test
+        connection.Close();
+        connection.Open();
+        var resultRecords = selectQuery.Execute(connection).ToList();
+
+        resultRecords.Should().HaveCount(countExpected, $"The record count should be {countExpected}, but got {resultRecords.Count}");
+
+        connection.Close();
+    }
+
+    [Fact(DisplayName = "Test select records with and conditions")]
+    public void TestSelectStudentsWithAndConditions()
+    {
+        var connectionString = TestBase.NewConnectionString();
+        var repository = TestBase.NewStudentsRepository();
+        TestBase.ToDoBefore(connectionString);
+
+        using var connection = TestBase.NewConnection(connectionString);
+        connection.Open();
+
+        FillStudentList(TestBase, connection);
+        var countExpected = SampleData.DefaultStudentsList.Count(m => m.Name.Contains("Doe") && m.Name.Contains("J"));
+        var selectQuery = repository.Select().Where(m => m.And(mg => mg.Like(f => f.Name, "%Doe%")
+                                                                    .Like(f => f.Name, "%J%"))
+                                                    );
+
+        //Adds a fix to pgsql test
+        connection.Close();
+        connection.Open();
+        var resultRecords = selectQuery.Execute(connection).ToList();
+
+        resultRecords.Should().HaveCount(countExpected, $"The record count should be {countExpected}, but got {resultRecords.Count}");
+
+        connection.Close();
+    }
+
+    [Fact(DisplayName = "Test select records with complex conditions")]
+    public void TestSelectStudentsWithComplexConditions()
+    {
+        var connectionString = TestBase.NewConnectionString();
+        var repository = TestBase.NewStudentsRepository();
+        TestBase.ToDoBefore(connectionString);
+
+        using var connection = TestBase.NewConnection(connectionString);
+        connection.Open();
+
+        FillStudentList(TestBase, connection);
+        var countExpected = SampleData.DefaultStudentsList.Count(m => (m.Name.Contains("Doe") && m.Name.Contains("J")) || m.Name.Contains("Adams"));
+        var selectQuery = repository.Select()
+                                    .Where(m => m.Or(a => a.And(mg => mg.Like(f => f.Name, "%Doe%").Like(f => f.Name, "%J%"))
+                                                                    .Like(f => f.Name, "%Adams%")));
+
+        //Adds a fix to pgsql test
+        connection.Close();
+        connection.Open();
+        var resultRecords = selectQuery.Execute(connection).ToList();
+
+        resultRecords.Should().HaveCount(countExpected, $"The record count should be {countExpected}, but got {resultRecords.Count}");
+
+        connection.Close();
+    }
+
     [Fact(DisplayName = "Test select records with like clause")]
     public void TestSelectStudentsLike()
     {

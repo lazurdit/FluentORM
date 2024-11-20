@@ -16,10 +16,10 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public bool IsNotInRange { get; set; }
 
-        public override string GetExpression(string expressionSymbol)
+        public override string GetExpression()
         {
             if (hasParameters)
-                return $"({AttributeName} {(IsNotInRange ? " not " : "")} in ({string.Join(",", Values?.Select((value, index) => $"{expressionSymbol}{ParameterName}_{index}")?.ToArray() ?? Array.Empty<string>())}{"))"} ";
+                return $"({AttributeName} {(IsNotInRange ? " not " : "")} in ({string.Join(",", Values?.Select((value, index) => $"{ExpressionSymbol}{ParameterName}_{index}")?.ToArray() ?? Array.Empty<string>())}{"))"} ";
             else
                 if (Values == null || Values.Length == 0)
                 return $"({AttributeName} {(IsNotInRange ? " not " : "")} in (null))";

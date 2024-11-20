@@ -21,6 +21,6 @@ namespace LazurdIT.FluentOrm.Common
 
         IRawSelectQuery<T> Returns(Action<IFieldsSelectionManager<T>> fn);
 
-        IRawSelectQuery<T> Where(Action<IConditionsManager<T>> fn);
+        IRawSelectQuery<T> Where(Action<IFluentConditionsManager<T>> fn);
     }
 }

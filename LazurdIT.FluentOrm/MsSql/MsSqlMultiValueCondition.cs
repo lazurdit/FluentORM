@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace LazurdIT.FluentOrm.MsSql
 {
-    public abstract class MsSqlMultiValueCondition<T, TProperty> : IMultiValueCondition<T, TProperty>, ISingleAttributeCondition
+    public abstract class MsSqlMultiValueCondition<T, TProperty> : IMultiValueSingleAttributeCondition<T, TProperty>
     {
         public string AttributeName { get; set; } = string.Empty;
 
@@ -13,21 +13,32 @@ namespace LazurdIT.FluentOrm.MsSql
 
         public TProperty[]? Values { get; set; }
 
-        public SqlParameter[]? GetSqlParameters(string expressionSymbol)
+        public SqlParameter[]? GetSqlParameters()
         {
-            return Values?.Select((value, index) => new SqlParameter($"{expressionSymbol}{ParameterName}_{index}", value)).ToArray();
+            return Values?.Select((value, index) => new SqlParameter($"{ExpressionSymbol}{ParameterName}_{index}", value)).ToArray();
         }
 
-        public ISingleAttributeCondition SetParameterName(string parameterName)
+        public abstract bool HasParameters { get; }
+        public string ExpressionSymbol { get; set; } = string.Empty;
+
+        public abstract string GetExpression();
+
+        public DbParameter[]? GetDbParameters() => GetSqlParameters();
+
+        public MsSqlMultiValueCondition<T, TProperty> SetParameterName(string parameterName)
         {
             ParameterName = parameterName;
             return this;
         }
 
-        public abstract bool HasParameters { get; }
+        IFluentCondition IFluentCondition.SetParameterName(string parameterName) => SetParameterName(parameterName);
 
-        public abstract string GetExpression(string expressionSymbol);
+        public MsSqlMultiValueCondition<T, TProperty> SetExpressionSymbol(string expressionSymbol)
+        {
+            ExpressionSymbol = expressionSymbol;
+            return this;
+        }
 
-        public DbParameter[]? GetDbParameters(string expressionSymbol) => GetSqlParameters(expressionSymbol);
+        IFluentCondition IFluentCondition.SetExpressionSymbol(string parameterName) => SetExpressionSymbol(parameterName);
     }
 }

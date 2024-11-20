@@ -8,6 +8,15 @@ Please refer to the official documentation for a detailed explanation of the ava
 
 
 ## Release Notes 
+# 1.3.5
+Provide varios fixes and enhancements to the SDK, upgrade to this version is highly recommended.
+- Fix: Fixed an issue with DbParameters inPgSql.
+- Fix: Fixed varios bugs in Select Query.
+- Add: Added recusrive And/Or conditions (Conditions can now contain a single or group conditions on multiple levels).
+- Enhancement: Added extra 21 test-cases to ensure more stability.
+- Enhancement: Reconstruct and enhance FluentCondition class.
+- Enhancement: Reconstruct and enhance ConditionsManager classes.
+
 # 1.3.0
 Provide varios fixes and enhancements to the SDK, upgrade to this version is highly recommended.
 - Fix: Fixed an issue with the `WithConnection` method.
@@ -38,10 +47,4 @@ Provide varios fixes and enhancements to the SDK, upgrade to this version is hig
 
 # 0.9.0 (Alpha)
 - initial release
-
-## Support
-
-For any questions, issues, or support related to `lazurd.FluentORM`, please contact Lazurd Computer Services LLC at:
-
-- Email: support@lazurdit.com 
  

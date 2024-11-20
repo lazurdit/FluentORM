@@ -40,7 +40,7 @@ namespace LazurdIT.FluentOrm.Oracle
 
         public OracleConnection? Connection { get; set; }
 
-        IConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
+        IFluentConditionsManager<T> IConditionQuery<T>.ConditionsManager => ConditionsManager;
 
         IFieldsSelectionManager<T> IRawSelectQuery<T>.FieldsManager => FieldsManager;
 
@@ -78,7 +78,7 @@ namespace LazurdIT.FluentOrm.Oracle
                 {
                     int i = 0;
                     query.Append(
-                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").GetExpression(ExpressionSymbol)))}"
+                        $" WHERE {string.Join(" AND ", ConditionsManager.WhereConditions.Select(w => w.SetParameterName($"param_{++i}").SetExpressionSymbol(ExpressionSymbol).GetExpression()))}"
                     );
 
                     foreach (
@@ -86,7 +86,7 @@ namespace LazurdIT.FluentOrm.Oracle
                     )
                     {
                         parameters.AddRange(
-                            (OracleParameter[])condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<OracleParameter>()!
                         );
                     }
                 }
@@ -148,7 +148,7 @@ namespace LazurdIT.FluentOrm.Oracle
         IRawSelectQuery<T> IRawSelectQuery<T>.Returns(Action<IFieldsSelectionManager<T>> fn) =>
             Returns(fn);
 
-        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IConditionsManager<T>> fn) => Where(fn);
+        IRawSelectQuery<T> IRawSelectQuery<T>.Where(Action<IFluentConditionsManager<T>> fn) => Where(fn);
 
         IEnumerable<T> IRawSelectQuery<T>.Execute(
             DbConnection? connection,

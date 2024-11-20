@@ -5,9 +5,9 @@ using System.Linq.Expressions;
 
 namespace LazurdIT.FluentOrm.Pgsql
 {
-    public class PgsqlConditionsManager<T> : IConditionsManager<T> where T : IFluentModel, new()
+    public class PgsqlConditionsManager<T> : IFluentConditionsManager<T> where T : IFluentModel, new()
     {
-        public List<ICondition> WhereConditions { get; } = new();
+        public List<IFluentCondition> WhereConditions { get; } = new();
 
         public PgsqlConditionsManager()
         {
@@ -15,7 +15,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public virtual PgsqlConditionsManager<T> Clone(PgsqlConditionsManager<T> sourceConditionsManager)
         {
-            WhereConditions.AddRange(new List<ICondition>(sourceConditionsManager.WhereConditions));
+            WhereConditions.AddRange(new List<IFluentCondition>(sourceConditionsManager.WhereConditions));
             return this;
         }
 
@@ -25,9 +25,31 @@ namespace LazurdIT.FluentOrm.Pgsql
             return this;
         }
 
-        public virtual PgsqlConditionsManager<T> Custom(ISingleAttributeCondition condition)
+        public virtual PgsqlConditionsManager<T> Custom(IFluentSingleAttributeCondition condition)
         {
             WhereConditions.Add(condition);
+            return this;
+        }
+
+        public virtual PgsqlConditionsManager<T> Or(Action<PgsqlConditionsManager<T>> orCallback)
+        {
+            FluentWhereConditionGroup conditionGroup = new()
+            { CompareMethod = CompareMethods.Or };
+            PgsqlConditionsManager<T> manager = new();
+            orCallback(manager);
+            conditionGroup.Conditions.AddRange(manager.WhereConditions);
+            WhereConditions.Add(conditionGroup);
+            return this;
+        }
+
+        public virtual PgsqlConditionsManager<T> And(Action<PgsqlConditionsManager<T>> orCallback)
+        {
+            FluentWhereConditionGroup conditionGroup = new()
+            { CompareMethod = CompareMethods.And };
+            PgsqlConditionsManager<T> manager = new();
+            orCallback(manager);
+            conditionGroup.Conditions.AddRange(manager.WhereConditions);
+            WhereConditions.Add(conditionGroup);
             return this;
         }
 
@@ -39,7 +61,7 @@ namespace LazurdIT.FluentOrm.Pgsql
 
         public virtual PgsqlConditionsManager<T> Raw(string whereCondition)
         {
-            WhereConditions.Add(new PgsqlRawCondition() { Value = whereCondition });
+            WhereConditions.Add(new PgsqlRawCondition() { RawCondition = whereCondition });
             return this;
         }
 
@@ -115,38 +137,42 @@ namespace LazurdIT.FluentOrm.Pgsql
             return this;
         }
 
-        IConditionsManager<T> IConditionsManager<T>.Between<TProperty>(Expression<Func<T, TProperty>> property, TProperty value1, TProperty value2) => Between(property, value1, value2);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Between<TProperty>(Expression<Func<T, TProperty>> property, TProperty value1, TProperty value2) => Between(property, value1, value2);
 
-        IConditionsManager<T> IConditionsManager<T>.Clone(IConditionsManager<T> sourceIConditionsManager) => Clone((PgsqlConditionsManager<T>)sourceIConditionsManager);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Clone(IFluentConditionsManager<T> sourceIConditionsManager) => Clone((PgsqlConditionsManager<T>)sourceIConditionsManager);
 
-        IConditionsManager<T> IConditionsManager<T>.Custom(ISingleAttributeCondition condition) => Custom(condition);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Custom(IFluentSingleAttributeCondition condition) => Custom(condition);
 
-        IConditionsManager<T> IConditionsManager<T>.Eq<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Eq(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.And(Action<IFluentConditionsManager<T>> conditionGroup) => And(conditionGroup);
 
-        IConditionsManager<T> IConditionsManager<T>.Gt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Gt(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Or(Action<IFluentConditionsManager<T>> conditionGroup) => Or(conditionGroup);
 
-        IConditionsManager<T> IConditionsManager<T>.Gte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Gte(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Eq<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Eq(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.In<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values) => In(property, values);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Gt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Gt(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.IsNotNull<TProperty>(Expression<Func<T, TProperty>> property) => IsNotNull(property);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Gte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Gte(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.IsNull<TProperty>(Expression<Func<T, TProperty>> property) => IsNull(property);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.In<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values) => In(property, values);
 
-        IConditionsManager<T> IConditionsManager<T>.Like<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Like(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.IsNotNull<TProperty>(Expression<Func<T, TProperty>> property) => IsNotNull(property);
 
-        IConditionsManager<T> IConditionsManager<T>.Lt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Lt(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.IsNull<TProperty>(Expression<Func<T, TProperty>> property) => IsNull(property);
 
-        IConditionsManager<T> IConditionsManager<T>.Lte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Lte(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Like<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Like(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.NotBetween<TProperty>(Expression<Func<T, TProperty>> property, TProperty values1, TProperty values2) => NotBetween(property, values1, values2);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Lt<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Lt(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.NotIn<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values) => NotIn(property, values);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Lte<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => Lte(property, value);
 
-        IConditionsManager<T> IConditionsManager<T>.NotLike<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => NotLike(property, value);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.NotBetween<TProperty>(Expression<Func<T, TProperty>> property, TProperty values1, TProperty values2) => NotBetween(property, values1, values2);
 
-        IConditionsManager<T> IConditionsManager<T>.Raw(string whereCondition) => Raw(whereCondition);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.NotIn<TProperty>(Expression<Func<T, TProperty>> property, params TProperty[] values) => NotIn(property, values);
 
-        IConditionsManager<T> IConditionsManager<T>.Raw<TProperty>(Expression<Func<T, TProperty>> property, string whereCondition) => Raw(property, whereCondition);
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.NotLike<TProperty>(Expression<Func<T, TProperty>> property, TProperty value) => NotLike(property, value);
+
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Raw(string whereCondition) => Raw(whereCondition);
+
+        IFluentConditionsManager<T> IFluentConditionsManager<T>.Raw<TProperty>(Expression<Func<T, TProperty>> property, string whereCondition) => Raw(property, whereCondition);
     }
 }

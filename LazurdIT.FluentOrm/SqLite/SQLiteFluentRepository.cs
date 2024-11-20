@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
@@ -136,7 +135,7 @@ namespace LazurdIT.FluentOrm.SQLite
                     foreach (var condition in manager.WhereConditions.Where(w => w.HasParameters))
                     {
                         parameters.AddRange(
-                            (SQLiteParameter[]?)condition.GetDbParameters(ExpressionSymbol)!
+                            condition.SetExpressionSymbol(ExpressionSymbol).GetDbParameters().ToNativeDbParameters<SQLiteParameter>()!
                         );
                     }
                 }
@@ -228,7 +227,7 @@ namespace LazurdIT.FluentOrm.SQLite
             Update((SQLiteConnection?)connection);
 
         bool IFluentRepository<T>.IsUsedByAnyOutRelation(
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         )
         {
@@ -237,7 +236,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         bool IFluentRepository<T>.IsUsedByRelation(
             IFluentRelation[] FluentRelations,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(
@@ -248,7 +247,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         bool IFluentRepository<T>.IsUsedByRelation(
             string FluentRelationName,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(
@@ -259,7 +258,7 @@ namespace LazurdIT.FluentOrm.SQLite
 
         bool IFluentRepository<T>.IsUsedByRelation(
             string[] FluentRelationNames,
-            Func<IConditionsManager<T>, IConditionsManager<T>> conditionsManager,
+            Func<IFluentConditionsManager<T>, IFluentConditionsManager<T>> conditionsManager,
             DbConnection? connection
         ) =>
             IsUsedByRelation(
